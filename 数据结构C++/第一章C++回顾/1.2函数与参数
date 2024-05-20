@@ -1,0 +1,348 @@
+1.1引言
+int abc(int a, int b, int c) {
+	return a + b * c;  //计算 a + b * c的值并返回这个值 
+} 
+a, b, c为函数的形参  x = abc(2, x , y) 2 , x ,y是函数的实参
+
+函数abc执行前， 把实参复制到形参。 复制过程是由形参类型的	
+		复制构造函数（copy constructor）来完成的。
+当函数运行结束时， 形参类型的析构函数负责释放形式参数。
+
+形参类型是一个变量， 它的值由编译器来确定。 这种通用模板使用的是模板语句。下面使用模板函数来实现 获得a + b * c的功能
+
+template<class T>
+T abc(T a, T b, T c) {
+	return a + b * c;
+}
+
+当a, b, c是传值参数时， 一进入函数调用， 类型T的复制构造函数便把相应得实参分别复制给形参a, b, c，以供函数使用。当函数返回时， 类型T的析构函数被启用， 以
+释放形式参数a, b, c的空间。
+
+使用引用函数， 与传值函数情况不同， 当函数被调用时，下面程序没有复制实参的值， 在函数返回时， 也没有调用析构函数。
+template<class T>
+T abc(T& a, T& b, T& c) {
+	return a + b * c;
+}
+
+常量引用： 引用参数不能被函数修改。
+template <class T>
+T abc(const T& a, const T& b, const T& c) {
+	return a + b * c;
+}
+
+新版本中， 每个形参可以是不同的数据类型，， 而函数返回值的类型与第一个形参类型相同
+template <class Ta, class Tb, class Tc)
+Ta abc(const Ta& a, const Tb& b, const Tc& c) {
+	return a + b * c;
+}
+
+给函数返回类型增加一个后缀&, 便指定了一个引用返回。
+T& mystery(int i, T& z) {
+	return z;
+}
+这种返回形式不会把z的值复制到返回环境中。 当函数结束时， 形参i以及所有局部变量的空间都被释放。  因为z仅仅是对yige实参的引用， 所以它不受影响。
+const T& mystery(int i,T& z) {
+	
+}
+得到了常量引用， 与引用返回不同之处：
+					const引用返回在返回调用环境时， 必须将值赋给const常量
+
+
+what is function overloading?
+	定义多个同名函数的机制称为函数重载。
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+练习：
+1. void swap(int a, int b) {
+		int t = a;
+		a = b;
+		b = t;
+	} 为什么没有交换两个整数
+	answer:
+		这是一个可视化网站 https://pythontutor.com/render.html#mode=display
+		首先， 我们使用下面程序a.cpp测试这个函数
+			//a.cpp
+			#include <iostream> 
+			using namespace std;
+			void swap(int a, int b) {
+				int t = a;
+				a = b;
+				b = t;
+			}
+			signed main()
+			{
+				int a = 3, b = 4;
+				cout<<a<<" "<<b<<endl;
+				swap(a, b);
+				cout<<a<<" "<<b;
+				return 0;
+			}
+		在
+		当你调用 swap 函数时，传递给函数的是 a 和 b 变量的副本。这意味着在函数内部，a 和 b 是新的变量，它们存储在函数的栈帧中。当你在函数内部交换这两个副本的值时，实际上只是在交换这两个新的变量的值，并没有影响到原始变量。
+
+		在函数调用时，实际上是将原始变量的值（即内存中的内容）复制到新的内存位置中，作为函数的参数。这就是为什么在函数内部修改参数的值不会影响到原始变量的值。
+
+		要实现原地交换，你需要传递变量的地址，这样函数就可以通过指针来访问和修改原始变量的值，而不是它们的副本。这是因为指针存储的是变量的内存地址，而不是变量的值本身，通过指针操作可以直接修改内存中的内容，从而影响到原始变量。
+		so, 修改一下
+			#include <iostream> 
+			using namespace std;
+			void swap(int& a, int& b) {
+				int t = a;
+				a = b;
+				b = t;
+			}
+			signed main()
+			{
+				int a = 3, b = 4;
+				cout<<a<<" "<<b<<endl;
+				swap(a, b);
+				cout<<a<<" "<<b;
+				return 0;
+			}
+						swap 函数的参数是对变量 a 和 b 的引用，而不是它们的副本。通过使用引用，函数实际上直接操作了原始变量的值，而不是它们的副本。
+						当你调用 swap(a, b) 时，传递给 swap 函数的是 a 和 b 变量的引用，而不是它们的值。这意味着在 swap 函数内部，a 和 b 分别代表了 main 函数中的 a 和 b 变量。因此，通过引用，swap 函数可以直接修改 main 函数中 a 和 b 的值，实现了成功的交换。
+			#include <iostream> 
+			using namespace std;
+			void swap(int* a, int* b) {
+				int* t = a;
+				a = b;
+				b = t;
+			}
+			signed main()
+			{
+				int a = 3, b = 4;
+				cout<<a<<" "<<b<<endl;
+				swap(a, b);
+				cout<<a<<" "<<b;
+				return 0;
+			}
+					在示例中，swap 函数的参数是指向整数的指针 a 和 b。在函数内部，它交换了 a 和 b 指针的值（即它们指向的内存地址），但没有修改指针所指向的内存中的实际值。
+
+2. 编写个模板函数count， 返回值是数组a[0:n-1]的数值个数。
+		answer:
+			写个冒泡排序函数对a数组进行排序， 判断数组中有多少个不同的数值
+			#include <iostream> 
+			using namespace std;
+
+			template<class T, size_t N>
+			void bubble_sort(T (&a)[N]) {
+			    for (size_t i = 0; i < N - 1; i++) {
+			        for (size_t j = 0; j < N - i - 1; j++) { 
+			            if (a[j] > a[j + 1]) {
+			                T t = a[j];
+			                a[j] = a[j + 1];
+			                a[j + 1] = t;
+			            }
+			        }
+			    }
+			}
+
+			template<class T, size_t N>
+			int count(T (&a)[N]) {
+			    bubble_sort(a);
+			    int ans = 1;
+			    for (size_t i = 1; i < N; i++) {
+			        if (a[i] != a[i - 1]) {
+			            ans++;
+			        }
+			    }
+			    return ans;
+			}
+
+			signed  main() {
+			    int a[] = {64, 34, 35, 35, 28, 28, 15, 90};
+			    size_t n = sizeof(a) / sizeof(a[0]);
+			    int res = count(a);
+			    cout << res << endl;
+			    return 0;
+			}
+
+3. 编写模板函数fill， 给a[st:ed-1]赋值val.
+
+		#include <iostream>
+		template<typename T, size_t N>
+		void fill(T (&a)[N], size_t st, size_t ed, const T& val) {
+		    if (st >= ed) {
+		        return;
+		    }
+
+		    for (size_t i = st; i < ed && i < N; ++i) {
+		        a[i] = val;
+		    }
+		}
+
+
+		int main() {
+		    int a[] = {1, 2, 3, 4, 5};
+		    size_t n = sizeof(a) / sizeof(a[0]);
+
+		    // 给数组的下标 1 到 3 赋值为 10
+		    fill(a, 1, 4, 10);
+
+		    std::cout << "Modified array: ";
+		    for (size_t i = 0; i < n; ++i) {
+		        std::cout << a[i] << " ";
+		    }
+		    std::cout << std::endl;
+
+		    return 0;
+		}
+4. 编写模板函数inner_product，返回(i from 0 to n - 1)a[i]*b[i].
+	#include <iostream>
+
+	template<typename T, size_t N>
+	T inner_product(const T (&a)[N], const T (&b)[N]) {
+	    T result = 0;
+	    for (size_t i = 0; i < N; ++i) {
+	        result += a[i] * b[i];
+	    }
+	    return result;
+	}
+
+	int main() {
+	    int a[] = {1, 2, 3, 4, 5};
+	    int b[] = {6, 7, 8, 9, 10};
+	    size_t n = sizeof(a) / sizeof(a[0]);
+
+	    // 计算两个数组的内积
+	    int result = inner_product(a, b);
+
+	    std::cout << "Inner product: " << result << std::endl;
+
+	    return 0;
+	}
+
+5. 编写函数iota, 使得a[i] = val + i， 0 <= i < n.
+	
+		
+		#include <iostream>
+		template<typename T, size_t N>
+		void iota(T (&a)[N], const T& val) {
+		    for (size_t i = 0; i < N; ++i) {
+		        a[i] = val + i;
+		    }
+		}
+
+		int main() {
+		    int a[5];
+		    size_t n = sizeof(a) / sizeof(a[0]);
+		    int val = 5;
+
+		    // 调用 iota 函数来填充数组
+		    iota(a, val);
+
+		    // 打印数组
+		    std::cout << "Filled array: ";
+		    for (size_t i = 0; i < n; ++i) {
+		        std::cout << a[i] << " ";
+		    }
+		    std::cout << std::endl;
+
+		    return 0;
+		}
+6. 编写模板函数is_sorted， 当且仅当a[0:n-1]有序时， 返回值是true.
+
+		#include <iostream>
+
+		template<typename T, size_t N>
+		bool is_sorted(const T (&a)[N]) {
+		    bool increasing = true;
+		    bool decreasing = true;
+
+		    for (size_t i = 1; i < N; ++i) {
+		        if (a[i - 1] > a[i]) { //递减 
+		            increasing = false;
+		        }
+		        if (a[i - 1] < a[i]) { //递增 
+		            decreasing = false; 
+		        }
+		    }
+
+		    return increasing || decreasing;
+		}
+
+		int main() {
+		    int a[] = {1, 2, 3, 4, 5};
+		    int b[] = {5, 4, 3, 2, 1};
+		    int c[] = {5, 5, 5, 5, 5}; // 只有一个元素，也算有序
+		    size_t n = sizeof(a) / sizeof(a[0]);
+
+		    // 检查数组是否有序
+		    bool sorted_a = is_sorted(a);
+		    bool sorted_b = is_sorted(b);
+		    bool sorted_c = is_sorted(c);
+
+		    std::cout << "Array a is sorted: " << std::boolalpha << sorted_a << std::endl;
+		    std::cout << "Array b is sorted: " << std::boolalpha << sorted_b << std::endl;
+		    std::cout << "Array c is sorted: " << std::boolalpha << sorted_c << std::endl;
+
+		    return 0;
+		}
+
+
+7. 编写模板函数mismatch， 返回值是使不等式a[i] != b[i]的最小索引i， 0 <= i < n.
+	#include <iostream>
+
+	template<typename T, size_t N>
+	size_t mismatch(const T (&a)[N], const T (&b)[N]) {
+	    for (size_t i = 0; i < N; ++i) {
+	        if (a[i] != b[i]) {
+	            return i;
+	        }
+	    }
+	    return N; // 如果数组完全相等，则返回数组长度
+	}
+
+	int main() {
+	    int a[] = {1, 2, 3, 4, 5};
+	    int b[] = {1, 2, 3, 4, 6}; // 第五个元素不相等
+	    size_t n = sizeof(a) / sizeof(a[0]);
+
+	    // 查找第一个不相等的元素的索引
+	    size_t index = mismatch(a, b);
+
+	    if (index < n) {
+	        std::cout << "First mismatch at index: " << index << std::endl;
+	    } else {
+	        std::cout << "Arrays are equal" << std::endl;
+	    }
+
+	    return 0;
+	}
+
+8.下面的函数头是具有不同签名的函数吗？ 
+int abs(int a, int b, int c)
+float abc(int a, int b, int c)
+ 	answer：
+		在C++中，函数的签名是由函数的名称、参数的数量和参数的类型（包括顺序）组成的。因此，即使函数的名称相同，只要参数的数量或类型有所不同，这两个函数就会有不同的签名。
+		在给定的例子中，第一个函数 int abs(int a, int b, int c) 接受三个整数参数，而第二个函数 float abc(int a, int b, int c) 接受三个整数参数，但返回值类型不同。因此，这两个函数具有不同的签名。
+		重载函数具有不同的签名。在C++中，函数的签名由函数的名称和参数列表组成。因此，即使函数名称相同，只要它们的参数列表不同（包括参数的数量、类型或顺序），它们就具有不同的签名。
+9.
+
+int abc(int a, int b, int c) {
+	return a + b * c;  //计算 a + b * c的值并返回这个值 
+} 
+float abc(float a, float b, float c) {
+	return a + b * c;  //计算 a + b * c的值并返回这个值 
+} 
+一个程序包含下面两个abc函数。三条语句分别调用了哪一个abc函数？哪一条语句会出现编译错误？ 为什么
+1) cout<<abc(1,2,3)<<endln;
+2) cout<<abc(1.0F,2.0F,3.0F)<<endln;
+3) cout<<abc(1,2,3.0F)<<endln;
+4) cout<<abc(1.0,2.0,3.0)<<endln;
+
+		cout << abc(1, 2, 3) << endl;
+	这条语句调用的是接受三个 int 参数的 abc 函数，因为传入的参数类型为 int。因此，它会返回整数类型的结果。
+
+	cout << abc(1.0F, 2.0F, 3.0F) << endl;
+	这条语句调用的是接受三个 float 参数的 abc 函数，因为传入的参数类型为 float。因此，它会返回浮点数类型的结果。
+
+	cout << abc(1, 2, 3.0F) << endl;
+	这条语句调用的是接受三个 float 参数的 abc 函数。在这里，虽然第一个和第二个参数都是整数，但是由于参数列表中有一个 float 类型的参数，因此会发生隐式类型转换，将整数转换为浮点数。因此，这条语句会调用接受三个 float 参数的 abc 函数。
+
+	cout << abc(1.0, 2.0, 3.0) << endl;
+	这条语句会出现编译错误。原因是没有匹配的 abc 函数可以接受三个 double 参数。在函数重载中，参数类型必须严格匹配，不能进行隐式类型转换，因此无法调用任何已定义的 abc 函数。
+
+------------------------------------------------------------------------------------------------------------------------- 写于 2024/05/18 希望我能坚持下去

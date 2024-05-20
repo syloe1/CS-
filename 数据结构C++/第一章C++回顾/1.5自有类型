@@ -1,0 +1,165 @@
+定义自有数据类型最灵活的方式是使用C++的类结构。
+-------想到的一些问题---------
+1. 类和结构体的区别：
+			默认访问权限：
+
+			在类中，默认的成员访问权限是私有的（private），即类中定义的成员（包括数据成员和成员函数）默认情况下只能在类的内部访问。
+			在结构体中，默认的成员访问权限是公有的（public），即结构体中定义的成员默认情况下可以在结构体外部访问。
+			继承方式：
+
+			类支持三种继承方式：公有继承（public）、私有继承（private）和保护继承（protected）。
+			结构体只支持公有继承（public），因为结构体默认的成员访问权限是公有的。
+2. new delete 和 malloc free区别：
+			类型安全：
+
+				new和delete是C++的运算符，它们会自动计算所需的内存大小，并返回相应类型的指针。因此，new和delete是类型安全的，不需要显式指定分配内存的大小或强制类型转换。
+				malloc()和free()是C语言中的函数，它们返回void*类型的指针，需要显式指定要分配的内存大小，并且需要手动进行类型转换。
+			构造函数和析构函数：
+
+				使用new分配的内存会调用对象的构造函数来初始化对象，而使用delete释放的内存会调用对象的析构函数来清理资源。
+				malloc()和free()仅仅分配和释放内存，不会调用对象的构造函数和析构函数，因此如果要使用它们来分配和释放内存，需要手动调用构造函数和析构函数。
+			对于类对象的内存管理：
+
+				对于类对象而言，应该使用new和delete来进行内存的分配和释放，以保证对象的构造和析构函数得到正确的调用。
+				尽管可以使用malloc()和free()来分配和释放类对象的内存，但这样做不会调用构造函数和析构函数，可能导致对象的行为不符合预期。
+			可重载性：
+
+				new和delete是运算符，可以被重载，因此可以根据需要自定义类的new和delete运算符来实现特定的内存分配和释放策略。
+				malloc()和free()是标准库函数，不能被重载。
+------------------------------------------------------------
+
+---实现书本的currency类
+class cur {
+	using ul = unsigned long ;
+	using ui = unsigned int;
+	public:
+		//构造函数
+		cur(signType theSign = plus,
+		    unsigned long theDollars = 0,
+		    unsigned int theCents = 0;
+		   )
+		//析构函数
+		~cur()  {}
+		void setVal(signType, unsigned long, unsigned int);
+		void setVal(double);
+		signType getSign() const {
+			return sign;
+		}  在C++中，成员函数后面加上const关键字表示该成员函数是一个常量成员函数。这意味着在这个成员函数内部，不能修改类的成员变量（除了被声明为mutable的成员变量），也不能调用非常量成员函数。
+		ul getDollars() const {
+			return dollars;
+		}
+		ui getCents() const {
+			return cents;
+		}
+		cur add(const cur&) const;
+		/*
+				避免不必要的拷贝：使用常量引用可以避免在函数调用时进行不必要的对象拷贝，提高了程序的效率。如果形参不使用引用或者不加const，那么传递参数时会发生拷贝构造，会额外消耗内存和CPU时间。
+
+保护对象的数据：使用常量引用可以保护传入的对象数据，防止在函数内部意外地修改传入对象的状态。因为常量引用表示函数在调用过程中不会修改传入对象的数据。
+
+而在函数名后加上const，比如cur add(const cur&) const;，这表示这个成员函数是一个常量成员函数。这种设计的原因可能包括：
+
+语义清晰：向其他开发人员传达了这个函数的用途，即它不会修改对象的状态。
+
+安全性：可以确保在调用这个函数时不会意外地修改对象的状态，减少了程序出错的可能性。
+
+可用性：可以在常量对象上调用这个函数，而不能在常量对象上调用非常量成员函数。这提高了代码的灵活性和可维护性。
+		*/
+
+		cur& increment(const cur&) ; //返回 一个对cur类型的引用
+		void output()  const ;
+	private:
+		signType sign;
+		unsigned long dollars;
+		unsigned int cnets;
+};
+
+如果构造函数初始值的个数少于参数个数， 剩下的参数都是缺省值
+没有指定复制构造函数， C++将使用缺省复制构造函数。
+
+成员函数如果不在类声明体内部实现， 就必须使用作用域：：指明函数是哪个类的成员函数
+cur::output表示cur类的output成员函数
+实现构造函数
+cur::cur(signType ts, ul td, ui tc) {
+	setVal(ts, td, tc);
+}
+//给私有数据成员赋值
+//给私有数据成员赋值
+void cur::setVal(signType ts, ul td, ui tc)  {
+	if (tc > 99) {
+		throw illegalParameterValue("Cents should be < 100");
+	 
+	 }
+	 sign = ts;
+	 dollars = td;
+	 cents = tc;
+}
+//给调用对象的数据成员赋值 
+void cur::setVal(double am) {
+	if (am < 0) {
+		sign = minus;
+		am = -am;
+	} else {
+		sign = plus;
+		dollars = (ul)am;
+		cents = (ui)((am + 0.001 - dollars) * 100);
+	}
+}
+cur cur::add(const cur& x)  const {
+	long a1, a2, a3; 
+	cur res;
+	a1 = dollars * 100 + cents;
+	if (sign == minus) a1 = -a1;
+	a2 = x.dollars * 100 + x.cents;
+	if (x.sign == minus) a2 = -a2;
+	a3 = a1 + a2;
+	if (a3 < 0) {
+		res.sign = minus; a3 = -a3;
+	} else {
+		res.sign = plus;
+		res.dollars = a3 / 100;
+		res.cents = a3 - res.dollars * 100;
+	}
+	return res;
+}
+cur& cur::increment(const cur& x) {
+	*this = add(x); //*this是一个特殊指针， 指向当前对象的地址 
+	return *this; //返回对当前对象的引用 
+}
+void cur::output()  const {
+	if (sign == minus) cout<<'-';
+	cout<<'$'<<dollars<<'.';
+	if (cents < 10) cout<<'0';
+	cout<<cents;
+}
+-----------------------------------------------------------操作符重载： 使用操作符重载可以扩大C++操作符的应用范围， 使其操作新的数据类型或类。
+？？？？？为什么重载<< 和 >>不声明为类的成员函数， 而+和+=可以声明成类的成员函数。
+answer: 
+				算符重载有两种形式：成员函数重载和非成员函数重载
+							成员函数重载：当运算符作用于类的对象时，可以将运算符重载为类的成员函数。这种方式的优势是可以直接访问类的私有成员变量，但局限性在于左操作数必须是对象本身，因此无法实现左操作数是非类类型的情况。
+
+							非成员函数重载：当运算符不作用于类的对象时，或者需要支持左操作数是非类类型的情况，可以将运算符重载为非成员函数。这种方式的优势是更加灵活，可以支持更多的操作数类型组合，但无法直接访问类的私有成员变量，需要通过类的公有接口进行操作。
+ostream operator << (ostream& out, const cur & x) {
+	out<<x.am; return out;
+}
+cur  operator+ (const cur&) const;
+cur& operator +=(const cur& x) {
+	am += x.am; return *this;
+}
+
+
+Why do we need friend functions？
+	对于一个类的是由成员，, 只有类的成员函数才能直接访问。 可以在一些情况下，我们必须给与别的类和函数直接访问该类私有成员的权利。 这就需要把这些类和函数声明为该类的友函数。
+
+一个类A从另一个类B派生， A是派生类， B是基类。
+派生类需要访问基类的部分或所有成员函数。保护性成员
+类似于私有成员， 区别在于派生类函数可以访问基类的保护性成员函数。
+
+#ifndef cur_
+#define cur_
+		语句
+#endif
+
+包含在#if 和#ed中的语句只编译一次
+
+---------------------------------------------------------------2024/05/19 17:49 知行楼412

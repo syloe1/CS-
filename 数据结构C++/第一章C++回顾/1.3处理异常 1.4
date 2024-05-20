@@ -1,0 +1,209 @@
+一段代码抛出的异常由包含这段代码的try块来处理。 紧跟try块之后的是catch块。 每一个catch块都有一个参数， 参数的类型决定了这个catch块捕捉的异常的类型。
+catch(char *a) {} 捕捉异常类型是char*
+catch(exception& e) {} 捕捉的异常类型是基类exception还有它派生
+出的类型
+
+
+
+练习10： 修改程序， 使得抛出的异常类型是整型。 如果a, b, c都小于0，那么抛出的异常值是1。 如果a , b, c都等于0, 抛出的异常值是2.否则没有异常 
+		#include <iostream>
+		using namespace std;
+
+		int abc(int a, int b, int c) {
+		    if (a < 0 && b < 0 && c < 0) {
+		        throw 1;  // 如果a, b, c都小于0，抛出异常值1
+		    }
+		    if (a == 0 && b == 0 && c == 0) {
+		        throw 2;  // 如果a, b, c都等于0，抛出异常值2
+		    }
+		    return a * b * c;  // 否则没有异常
+		}
+
+		int main() {
+		    try {
+		        cout << abc(-1, -1, -1) << endl;
+		    } catch (int e) {
+		        cout << "An exception has been thrown" << endl;
+		        cout << "Exception value: " << e << endl;
+		        return 1;
+		    }
+		    return 0;
+		}
+练习11： 编写个模板函数count， 返回值是数组a[0:n-1]的数值个数。当n < 1抛出char*的异常
+
+		#include <iostream>
+		using namespace std;
+
+		template<class T, size_t N>
+		void bubble_sort(T (&a)[N]) {
+			for (size_t i = 0; i < N - 1; i++) {
+				for (size_t j = 0; j < N - i - 1; j++) {
+					if (a[j] > a[j + 1]) {
+						T t = a[j];
+						a[j] = a[j + 1];
+						a[j + 1] = t;
+					}
+				}
+			}
+		}
+
+		template<class T, size_t N>
+		int count(T (&a)[N]) {
+			if (N < 1) {
+				throw "n must be >= 1";  // 抛出char*类型的异常
+			}
+			bubble_sort(a);
+			int ans = 1;
+			for (size_t i = 1; i < N; i++) {
+				if (a[i] != a[i - 1]) {
+					ans++;
+				}
+			}
+			return ans;
+		}
+
+		signed  main() {
+			try {
+				int a[] = {64, 34, 35, 35, 28, 28, 15, 90};
+				size_t n = sizeof(a) / sizeof(a[0]);
+				int res = count(a);
+				cout << res << endl;
+			} catch(const char* e) {
+				cout<<"Exception: "<<e<<endl;
+				return 1;
+			}
+			return 0;
+		}
+
+
+new 操作符用于动态分配内存，并返回一个指向已分配内存的指针。具体来说，new 操作符会在堆（heap）上分配适当大小的内存，并返回一个指向该内存的指针。
+int* y 声明一个整型指针    为y动态分配内存 y = new int 
+操作符new分配了一块能够存储一个整数的空间， 并将该空间的指针赋给y, y是对指针的引用， *y是对整数本身的引用。
+so
+	声明y，动态分配内存， 为*y赋值
+	int* y = new int; *y = 10;
+or 
+	int* y = new int (10);
+or 
+	int* y;
+	y = new int (10);
+
+动态分配的存储空间不再需要时应该把它释放。 释放的空间可重新用来
+动态分配。
+	float* x;
+	try{x = new float [n]; }
+	catch(bad_alloc e) {
+		cerr<<"Out of Memory"<<endl;
+		exit(1);
+	}
+释放*y delete y;
+释放数组y delete []y;
+
+
+C++采用很多机制来说明二维数组， 这些机制大多数就知道两维的大小。
+当形参是一个二维数组时， 必须指定第二维的大小。 
+	动态分配char c[7][5]
+	在编译时已经知道列数为5.
+			char (*c)[5];
+			try{c = new char [n][5];}
+			catch(bad_alloc){
+				cerr<<"Out of Memory"<<endl;
+				exit(1);
+			}
+
+如果数组的列数在编译时也是未知的， 将它看作是若干行
+所构成的结构，每一行都是一个能用new来创建的一维数组。
+指向每一行的指针保存在另外一个一维数组之中。
+
+//为一个二维数组分配存储空间
+		template <typename T>
+		bool make2dArray(T ** &x, int row, int col) {
+			try {
+				//create row pointer
+				x = new T* [row];
+				for (int i = 0; i < row; i++) {
+					x[i] = new int [col];
+				}
+				return true;
+			} catch (bad_alloc) {return false;}
+		}
+//无异常处理
+		template <typename T>
+		bool make2dArray(T ** &x, int row, int col) {
+			x = new T* [row];
+			for (int i = 0; i < row; i++) {
+				x[i] = new int [col];
+			}
+		}
+//释放二维数组空间
+		template <typename T>
+		void delete2dArray(T ** &x, int row) {
+			for (int i = 0; i < row; i++) {
+				delete []x[i];
+			}
+			delete []x;
+			x = nullptr;
+		}
+---------------------------------------------------------------------------------------------------------------------
+练习12： 写一个通用算法， 为二维数组分配空间。
+	第三个参数不是整数col, 而是一维数组rowsize.它创建一个二维
+数组， 第i行的列数是rowsize[i] 
+		template <typename T>
+		bool make2dArray(T**& x, int row, const int* rowsize) {
+		    try {
+		        // 分配指向指针的数组
+		        x = new T*[row];
+
+		        // 为每一行分配列空间
+		        for (int i = 0; i < row; i++) {
+		            x[i] = new T[rowsize[i]];
+		        }
+		    } catch (bad_alloc& e) {
+		        // 捕获内存分配失败的异常
+		        return false;
+		    }
+		    return true;
+		}
+-----------------------------------------------------------
+练习13：编写一个模板函数changelen,将一个一维数组的长度从oldlen
+编程newlen.函数首先分配一个新的， 长度为newlen的数组，然后
+把原数组的前min{oldlen, newlen} 个元素复制到新数组中，最后
+释放原数组所占用的空间。 
+answer:
+		template <typename T>
+		T changelen(T* a, int& oldlen, int& newlen) {
+			T * na = new T[newlen];
+			int copylen = min(oldlen, newlen);
+			for (int i = 0; i < copylen; i++) {
+				na[i] = a[i];
+			}
+			delete []a;
+			return na;
+		}
+-----------------------------------------------------------
+练习14：编写一个模板函数change2dlen,将一个二维数组的行数从oldr,
+编程newr. 将一个二维数组的列数从oldc, 
+编程newc.函数首先分配newr个新的， 长度为newc的数组，然后
+把原数组的前min{oldr, newr} 行中qian min{oldc, newc}的元素复制到新数组中，最后
+释放原数组所占用的空间。
+answer:
+	T** change2dlen(T** a, int oldr, int oldc, int newr, int newc)  {
+		T** na = new T*[nr];
+		for (int i = 0; i < newr; i++) {
+			na[i] = new T[nc];
+		}
+		int copyr = min(oldr, newr);
+		int copyc = min(oldc, newc);
+		for (int i = 0; i < copyr, i++) {
+			for (int j = 0; j < copyc; j++) {
+				na[i][j] = a[i][j];
+			}
+		}
+		for (int i = 0; i < oldr; i++) {
+			delete []a[i];
+		}
+		delete []a;
+		return na;
+	}
+
+//写于2024/05/19/ 16:56 知行楼412

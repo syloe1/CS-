@@ -1,0 +1,53 @@
+template<class T>
+//vList vectorList
+class vList : public LinearList<T> {
+public:
+	vList(int initCapacity = 10);
+	vList(const vList<T>&) ;
+	~vList() {delete ele;}
+	bool empty() const {return ele->empty()};
+	int size() const {return (int)ele->size()};
+	T& get(int idx) const;
+	int idxof(const T& tele) const;
+	void erase(int idx);
+	void insert(int idx, T& tele);
+	void output(ostream& out) const;
+	int capacity() const (return (int)ele->capacity());
+	typedef typename vector<T>::iterator iterator;
+	iterator begin() {return ele->begin();}
+	iterator end() {return ele->end();}
+protected:
+	void cIdx(int idx)	 const;
+	vector<T>* ele; //存元素的vector 
+};
+
+template<class T>
+vList<T>::vList(int initCapacity) {
+	//构造函数 
+	if (initCapacity < 1)  {
+		ostringstream s;
+		s <<"initial capacity = "<<initCapacity<<" Must be > 0";
+		throw illegalParameterValue(s.str());
+	}
+	ele = new vector<T>;
+	ele->reserve(initCapacity);
+}
+//复制构造函数
+template<class T>
+vList<T>::vList(const vList<T>& tList) {
+	ele = ne vector<T>(*tList.ele) ;
+}
+template<class T>
+void vList<T>::erase(int idx)  {
+	cIdx(idx);
+	ele->erase(begin() + idx);
+}
+template<class T>
+void vList<T>::insrt(int idx, const T& tele) {
+	if (idx < 0 || idx > size()) {
+		ostringstream s;
+		s<<"index = "<<idx<<" size = "<<size();
+		throw illegalIndex(s.str());
+	}
+	ele->insert(ele->begin() + idx, tele);
+}

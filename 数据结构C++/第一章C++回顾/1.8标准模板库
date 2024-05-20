@@ -1,0 +1,26 @@
+1. accumulate(st, ed, initval);
+template<class T>
+T sum (T a[], int n) {
+	T ts = 0;
+	return accumulate(a, a + n, ts);
+}
+----------------------
+accumulate(st, ed, initval, operator)
+template<class T>
+T product(T a[], int n) {
+	T ts = 1;
+	return accumulate(a, a + n, ts, multiplies<T>());
+}
+------------------
+2. copy(st, ed, to)
+[st, ed - 1] => [to, to + ed - st] = to + (ed - 1 - st + 1)
+
+
+next_permutation(st, ed)对[st, ed)内的元素， 按字典排序，产生下一个更大的排列
+//next_permutation求排列
+template<class T>
+void permutation(T list[], int k, int m) {
+	do {
+		copy(list, list + m + 1, ostream_iterator<T>(cout, ""));
+	} while (next_permutation(list, list + m + 1));
+}

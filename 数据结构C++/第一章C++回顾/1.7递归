@@ -1,0 +1,198 @@
+递归函数：
+	{ 基础部分 不用递归就能求解
+	{ 递归部分
+归纳法： 
+	归纳基础-> 归纳假设-> 归纳步骤
+
+正确的递归函数必须包含 基础部分。 每一次递归调用， 参数值比上一次的参数值要小， 从而重复调用递归函数
+使参数值达到基础部分的值。
+
+//累加数组元素a[0:n-1]
+template<typename T>
+T sum(T a[], int n) {
+	T tsum = 0;
+	for (int i = 0; i < n; i++) {
+		tsum += a[i];
+	}
+	return tsum;
+}
+//使用递归函数生成排列
+template<class T>
+void permutation(T list[], int k, int m) {
+	if (k == m) {
+		copy(list, list + m + 1,
+				ostream_iterator<T>(cout, ""));
+	} else {
+		for (int i = k; i <= m; i++) {
+			swap(list[k], list[i]); //选
+			permutation(list, k + 1, m); 第k位确定， 看后缀(k + 1, m);
+			swap(list[k], list[i]); //回溯
+		}
+	}
+}
+//使用下面网址查看程序运行情况： https://pythontutor.com/render.html#mode=edit
+
+#include <iostream>
+#include <algorithm>
+#include <iterator>
+using namespace std;
+
+template<class T>
+void permutation(T list[], int k, int m) {
+    if (k == m) {
+        copy(list, list + m + 1, ostream_iterator<T>(cout, ""));
+        cout << endl;
+    } else {
+        for (int i = k; i <= m; i++) {
+            swap(list[k], list[i]); // 选
+            permutation(list, k + 1, m); // 第k位确定，看后缀(k + 1, m);
+            swap(list[k], list[i]); // 回溯
+        }
+    }
+}
+
+int main() {
+    char arr[] = {'a', 'b', 'c'};
+    permutation(arr, 0, 2); // 调用全排列函数
+    return 0;
+}
+------------------------------------------------------------------------------------------------------------------------练习19： 非递归程序求解n!.
+
+		#include <iostream>
+		#include <algorithm>
+		#include <iterator>
+		using namespace std;
+		using ull = unsigned long long ;
+		ull fac(int n) {
+			ull res = 1;
+			for (int i = 2; i <= n; i++) {
+				res *= i;
+			}
+			return res;
+		}
+		signed main() 
+		{
+			int n; scanf("%d", &n);
+			cout<<fac(n)<<endl;
+			return 0;
+		}
+------------------------------------------------------------
+练习20： 1. 编写递归函数计算斐波那契数列。
+	int fac(int n) {
+		if (n <= 1) return 1;
+		else return fac(n - 1) + fac(n - 2);
+	}
+ 2. 证明上面递归代码， 当n > 2时，fi的计算多于1次。
+ 		当 n > 2 时，fib(n) 的计算需要以下子计算：
+
+		fib(n - 1)
+		fib(n - 2)
+		fib(n - 1) 的计算又需要子计算：
+
+		fib(n - 2)
+		fib(n - 3)
+		这个过程会一直递归下去，直到达到基本情况 n <= 1。
+
+		所以，对于 n > 2，fib(n) 的计算至少需要 2 次。
+
+		另外，对于奇数 n，fib(n) 会计算 fib(n - 1) 和 fib(n - 2) 的重复值，导致计算次数进一步增加。
+3. 编写非递归函数求解斐波那契数列。 对于每个斐波那契数， 代码只计算一次。
+
+		#include <iostream>
+		using namespace std;
+		int fib(int n) {
+			if (n <= 2) return 1;
+			int a = 1, b = 1, c;
+			for (int i = 3; i <= n; i++) {
+				c = a + b;  a = b; b = c;
+			}
+			return c;
+		}
+		signed main()
+		{
+			int n; scanf("%d", &n);
+			cout<<fib(n);
+			return 0;
+		}
+-----------------------------------------------------------
+练习21： 
+	f(n) = n / 2  ,   n 为偶数
+		 = f(3n + 1) ,n 为奇数
+1. f(5) = f(3 *5 + 1) = f(16) = 8 f(7) = f(3 * 7 + 1) = f(22) = 11
+2. 递归部分：f(3n + 1) 基础部分：n / 2
+	证明重复应用递归部分可以把等式右边的f表达式转换为基础部分 
+	n 奇 3*n + 1偶数转换为（3*n+1)/ 2 基础部分 
+3.编写递归函数计算f(n)
+	int f(int n):
+    if n % 2 == 0:  # n为偶数
+        return n // 2
+    else:  # n为奇数
+        return f(3 * n + 1)
+----------------------------------------------------------------
+练习22：
+	阿克曼函数
+
+	A(i, j) = pow(2, j), i = 1 && j >= 1 基础部
+	递归        = A(i - 1, 2)， i >= 2 && j = 1
+	递归        = A(i- 1, A(i, j - 1)) i >= 2 && j >= 2
+3. 编写递归函数实现
+
+int ackermann(int i, int j) {
+    if (i == 1 && j >= 1) {
+        return pow(2, j);
+    } else if (i >= 2 && j == 1) {
+        return ackermann(i - 1, 2);
+    } else if (i >= 2 && j >= 2) {
+        return ackermann(i - 1, ackermann(i, j - 1));
+    }
+}
+-----------------------------------------------------------------
+练习23： 最大公约数
+gcd(a, b) = a, b = 0时
+		  = gcd(b, a % b), b > 0时
+int gcd (int a, int b) {
+	if (b == 0) return a;
+	else return (b, a % b);
+}
+---------------------------------------------------------------
+练习24：
+编写一个模板函数， 确定元素x是否属于数组a[0:n-1]
+template <typename T>
+bool contains(T a[], int n, T x) {
+    for (int i = 0; i < n; ++i) {
+        if (a[i] == x) {
+            return true;
+        }
+    }
+    return false;
+}
+----------------------------------------------------------
+练习25： 编写一个递归函数， 输出n个元素的所有子集
+std::string toBinary(int n) {
+    std::string binary;
+    if (n == 0) {
+        binary = "0";
+    } else {
+        while (n > 0) {
+            // 取出最低位的值并转换为字符
+            char bit = (n & 1) ? '1' : '0';
+            // 将该字符插入到二进制字符串的开头
+            binary = bit + binary;
+            // 右移一位，继续处理下一位
+            n >>= 1;
+        }
+    }
+    return binary;
+}
+vector<string> subsets(int n) {
+	vector<string>  ans;
+	for (int i = 0; i < (1 << n); i++) {
+		string path;
+		for (int j = 0; j < n; j++) {
+			if (i & (1 << j)) {
+				int t = nums[j]; toBinary(t);
+			}
+		}
+	}
+	return ans;
+}

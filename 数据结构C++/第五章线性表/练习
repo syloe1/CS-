@@ -1,0 +1,153 @@
+练习3： 编写函数clen2d， 用以改变二维数组的长度。二维数组的每一维的长度都可以变化。
+//改变一个一维数组长度
+template<class T>
+void clen1d(T*& a, int olen, int nlen)  {
+    if (nlen < 0) {
+        throw illegalParameterValue("new length must be >= 0");
+    }
+    T* t = new T[nlen];
+    int len = min(olen, nlen);
+    copy(a, a + len, t);
+    delete []a;
+    a = t;
+}
+template<class T>
+void clen2d(T**& a, int olen1, int olen2, int nlen1, int nlen2) {
+	clen1d(a, olen1, nlen1);
+	int len = min(olen1, nlen1);
+	for (int i = 0; i < t; i++) {
+		clen1d(a[i], olen2, nlen2);
+	}
+	if (nlen1 > olen1) {
+		for (int i = olen1; i < nlen1; i++) {
+			a[i] = new T[nlen2];
+		}
+	}
+}
+---------------------------------------------------------------------
+练习4：在类arrayList中加一个构造函数， 它允许我指定一个值。在数组空间满时， 用以改变数组长度。
+如果没有指定这个值， 在数组空间满时， 将数组长度加倍。 按照同样方法修改函数insert.
+// 类arrayList的构造函数
+template <class T>
+arrayList<T>::arrayList(int initCapacity) {
+    if(initCapacity < 1)  {
+        ostringstream s;
+        s <<"Initial capacity = "<<initCapacity<<" Must be > 0";
+        throw illegalParameterValue(s.str()) ;
+    }
+    arrayLength = initCapacity;
+    ele = new T[arrayLength] ;
+    listSize = 0;
+}
+
+// 重载构造函数，允许用户指定数组长度和默认填充值
+template<class T>
+arrayList<T>::arrayList(int initCapacity, const T& defaultValue) {
+    if(initCapacity < 1)  {
+        ostringstream s;
+        s <<"Initial capacity = "<<initCapacity<<" Must be > 0";
+        throw illegalParameterValue(s.str()) ;
+    }
+    arrayLength = initCapacity;
+    ele = new T[arrayLength];
+    fill(ele, ele + arrayLength, defaultValue); // 填充数组
+    listSize = 0;
+}
+
+// 复制构造函数
+template<class T>
+arrayList<T>::arrayList(const arrayList<T>& theList)  {
+    arrayLength = theList.arrayLength;
+    listSize = theList.listSize;
+    ele = new T[arrayLength];
+    copy(theList.ele, theList.ele + listSize, ele);
+}
+
+// 改变一个一维数组长度
+template<class T>
+void clen1d(T*& a, int olen, int nlen, const T& value)  {
+    if (nlen < 0) {
+        throw illegalParameterValue("new length must be >= 0");
+    }
+    T* t = new T[nlen];
+    int len = min(olen, nlen);
+    copy(a, a + len, t);
+    fill(t + len, t + nlen, value); // 用指定值填充新扩展的部分
+    delete []a;
+    a = t;
+}
+
+// 实现insert函数
+template<class T>
+void arrayList<T>::insert(int index, const T& tele) {
+    if (index < 0 || index > listSize) {
+        ostringstream s;
+        s<<"index = "<<index<<" size = "<<listSize;
+        throw illegalIndex(s.str());
+    }
+    if (listSize == arrayLength) {
+        T defaultValue = T(); // 默认构造一个对象来获取默认值
+        clen1d(ele, arrayLength , arrayLength * 2, defaultValue);
+        arrayLength *= 2; // 更新数组长度
+    }
+    copy_backward(ele + index, ele + listSize, ele + listSize + 1);
+    ele[index]  = tele;
+    listSize++;
+}
+--------------------------------------------------------练习5： 编写一个函数arrList<T>::trimToSize,使数组的长度等于max{listSize, 1}。 这个方法的复杂度是多少？
+// 实现trimToSize函数
+template<class T>
+void arrayList<T>::trimToSize() {
+    int newSize = max(listSize, 1); // 计算新的数组长度
+    if (newSize != arrayLength) {
+        T* newArray = new T[newSize]; // 创建新数组
+        copy(ele, ele + newSize, newArray); // 复制元素到新数组
+        delete[] ele; // 删除原数组
+        ele = newArray; // 更新指针
+        arrayLength = newSize; // 更新数组长度
+    }
+}
+
+---------------------------
+练习6： 编写方法arrayList<T>::setSize, 它使线性表的大小等于指定大小。若线性表开始的大小小于指定大小， 则不添加元素。 若线性表开始的大小大于指定的大小， 则删除多余的元素。 
+
+template <class T>
+void arrayList<T>::setSize(int nsize) {
+    if (nsize < 0) {
+        ostringstream s;
+        s<<"size cannot be negative";
+    }
+    if (nsize < listSize) {
+        listSize = nsize;
+    }
+}
+--------------------------------
+练习7：
+重载操作符[], 使表达式x[i]返回堆线性表第i个元素的引用。若线性表没有第i的元素， 则抛出异常illegalIndex.语句x[i] = y, 和y = x[i]按以往预期的方式执行。
+//重载操作符 
+template<class T>
+T& arrayList<T>::operator[](int idx) {
+    cIdx(idx);
+    return ele[idx];
+}
+//常用对象重载
+template<class T>
+const T& arrayList<T>::operator[] (int idx) const {
+    cIdx(idx);
+    return ele[idx];
+}
+--------------------------------------练习8：  重载操作符==， 使得表达式x == y返回true， 当且仅当两个用数组描述的线性表x和y相等。（即对所有的i, 两个线性表的第i元素相等）。
+// 重载操作符==
+template<class T>
+bool arrayList<T>::operator==(const arrayList<T>& other) const {
+    if (listSize != other.listSize) {
+        return false;
+    }
+    for (int i = 0; i < listSize; ++i) {
+        if (ele[i] != other.ele[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+-------------------------------------

@@ -1,0 +1,272 @@
+C++支持两种类--抽象类和具体类。一个抽象类包含没有实现代码的成员函数。 这样的成员函数称为纯虚函数。 纯虚函数用数字0作为初始值来说明。
+virtual int mypurevirtualfunction(int x) = 0;
+
+具体类是没有纯虚函数的类。只有具体类才可以实例化。 只能对具体类建立实例或对象。 我们可以建立抽象类的对象指针。
+
+复制构造函数是复制一个对象。 当一个对象传值给一个函数， 或者一个函数返回一个对象时， 都需要调用复制构造函数。
+
+          构造函数	                        复制构造函数
+目的	   初始化新创建的对象	                   从现有对象复制数据
+参数	   通常没有参数	                具有相同类的引用或指针作为参数
+用途	   创建新对象	                创建新对象，其值与现有对象相同
+初始化	为成员分配内存并初始化	            从现有对象复制数据
+对象创建	用于创建新对象	用于创建新对象，该对象与现有对象具有相同的数据
+
+复制构造函数是复制一个对象， 当一个对象传值给一个函数， 或者一个函数返回一个对象时， 都需要调用复制构造函数。
+//当 template<class T> 出现在一个函数声明之前时，表示这个函数是一个模板函数
+template<class T>
+class linearList {
+public:
+    virtual ~linearList() { };
+    virtual bool empty() const = 0;
+    virtual int size() const = 0;
+    virtual T& get(int index) const = 0;
+    virtual int indexof(const T& ele)  const = 0;
+    virtual void erase(int index) = 0;
+    virtual void insert(int index, const T& ele) = 0;
+    virtual void output(ostream& out) const = 0;
+    
+}; 
+template<class T>
+//表示arrList是linearList的派生类 
+class arrayList : public linearList<T>  {
+public:
+    // const () const成员函数
+    /*
+        对象的可变性：
+
+const 成员函数可以在 const 对象上调用。
+非 const 成员函数不能在 const 对象上调用。
+承诺不修改状态：
+
+const 成员函数承诺不修改对象的状态。
+非 const 成员函数可以修改对象的状态。
+接口设计：
+
+使用 const 成员函数有助于设计更安全的接口，因为它明确表示某些操作不会改变对象的状态。
+    */ 
+    arrayList(int initCapacity = 10);
+    arrayList(const arrayList<T>&);
+    ~arrayList() {delete []ele};
+    
+    bool empty() const {return listSize = 0;}
+    int size() const {return listSize;}
+    T& get(int index) const;
+    int indexof(const T& ele) const ;
+    void erase(int index);
+    void insert(int index, const T& ele);
+    void output(ostream& out) const;
+    
+    int capacity() const {return arrayLength;}
+protected:
+    void cIndex(int index) const ;
+    T* ele;      //数组 
+    int arrayLength; //数组容量 
+    int listSize; //元素个数 
+};
+//类arrayList的构造函数 
+template <class T>
+arrarList<T>::arrayList(int initCapacity) {
+    if(initCapacity < 1)  {
+        ostringstream s;
+        s <<"Initial capacity = "<<initCapacity<<" Must be > 0";
+        throw illegalParameterValue(s.str()) ;
+    }
+    arrayLength = initCapacity;
+    ele = new T[arrayLength] ;
+    listSize = 0;
+}
+//复制构造函数
+template<class T>
+arrayList<T>::arrayList(const arrayList<T>& theList)  {
+    arrayLength = theList.arrayLength;
+    listSize = theList.listSize;
+    ele = new T[arrayLength];
+    copy(theList.ele, theList.ele + listSize, ele);
+}
+//cIndex and get and indexof function
+template<class T>
+void arrayList<T>::cIndex(int index)  const {
+    if (index < 0 || index >= listSize) {
+        ostringstream s;
+        s<<"index = "<<index<<" size = "<<listSize;
+        throw illegalIndex(s.str());
+    }
+}
+template<class T>
+T& arrayList<T>::get(int index) const {
+    cIndex(index);
+    return ele[index];
+}
+template<class T>
+int arrayList<T>::indexof(const T& tele) const {
+    int index = (int)(find(ele, ele + listSize, tele) - ele);
+    if (index == listSize) {
+        return -1;
+    } else {
+        return index;
+    }
+}
+//删除索引为index的元素时， 用copy把索引index + 1, index + 2, ..listSize - 1向左移动一位， 
+//然后把listSize - 1
+template<class T>
+void arrayList<T>::erase(int index) {
+    cIndex(index);
+    copy(ele + index + 1, ele + listSize, ele + index);
+    ele[--listSize].~T(); //调用析构函数 
+}
+
+//实现insert使用STL的copy_backward函数
+ 
+    template<class BidirectionalIterator1, class BidirectionalIterator2>
+    BidirectionalIterator2 copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result);
+[st, ed) 
+测试例子：
+    #include <iostream>
+    #include <algorithm>
+    #include <vector>
+    
+    int main() {
+        std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+        
+        // 打印原始数组
+        std::cout << "Original vector: ";
+        for (int n : vec) {
+            std::cout << n << " ";
+        }
+        std::cout << std::endl;
+    
+        // 使用 copy_backward 将 [1, 4) 范围内的元素复制到从索引 4 开始的位置
+        std::copy_backward(vec.begin() + 1, vec.begin() + 4, vec.begin() + 5);
+    
+        // 打印结果数组
+        std::cout << "After copy_backward: ";
+        for (int n : vec) {
+            std::cout << n << " ";
+        }
+        std::cout << std::endl;
+    
+        return 0;
+    }
+//改变一个一维数组长度
+template<class T>
+void clen1d(T*& a, int olen, int nlen)  {
+    if (nlen < 0) {
+        throw illegalParameterValue("new length must be >= 0");
+    }
+    T* t = new T[nlen];
+    int len = min(olen, nlen);
+    copy(a, a + len, t);
+    delete []a;
+    a = t;
+}
+//实现insert函数
+template<class T>
+void arrayList<T>::insert(int index, const T& tele) {
+    if (index < 0 || index > listSize) {
+        ostringstream s;
+        s<<"index = "<<index<<" size = "<<listSize;
+        throw illegalIndex(s.str());
+    }
+    if (listSize == arrayLength) {
+        clen1d(ele, arrayLength , arrayLength * 2) {
+            arrayLength *= 2;
+        }
+    }
+    copy_backward(ele + index, ele + listSize, ele + listSize + 1);
+    ele[index]  = tele;
+    listSize++;
+}
+//把一个线性表插入输出流
+template<class T>
+void arrayList<T>::output(cout->out)  const {
+    copy (ele, ele + listSize, ostream_iterator<T>(cout, " "));
+}
+template<class T>
+ostream& operator<<(ostream& out, const arrayList<T>& x) {
+    x.output(out); return out;
+}
+
+------------------------------------------------------迭代器是一个指针， 指向对象的一个元素。*y是对指针y的解引用。
+for (iterator i = start; i != end; i++) {
+    cout<<*i<<" ";
+}
+输出范围在[st, ed)的所有元素
+---------------------------实现copy函数的一种代码
+template<class iterator>
+void copy(iterator st, iterator ed, iterator to) {
+    while (st != ed) {
+        *to =*st;
+        st++; to++;
+    }
+}
+---------------------------c++有5中迭代器：
+    输入  输出 向前 双向 随机
+所有迭代器都有操作符== != 解引用操作符*。
+
+//实现一个C++类iterator是类arrayList的双向迭代器
+class iterator;
+iterator begin() {return iterator(ele);} //返回 ele[0] 
+iterator end() {return iterator(ele + listSize);} //返回 ele[listSize]; 
+
+class iterator {
+public:
+    typedef bidirectional_iterator_tag iterator_category;
+    typedef T value_type;
+    typedef ptrdiff_t difference_type;
+    typedef T* pointer;
+    typedef T& reference;
+    
+    //构造函数
+    iterator (T* tpos = 0)  {pos = tpos;}
+    //解引用
+    T& operator*()  const {return *pos};
+    T* operator->() const {return &*pos};
+    //为什么返回 &*pos
+    //&*pos 先解引用 pos，获取它所指向的对象，然后取该对象的地址，从而返回一个指向该对象的指针。 
+    iterator& operator++() { //前加 
+        ++pos; return *this;
+    }
+    iterator operator++(int)  { //后加 
+        iterator old = *this;
+        ++pos;
+        return old; 
+    }
+    //迭代器的值减少
+    iterator& operator--()  {
+        --position; return *this;
+    }
+    iterator operator--(int) {
+        iterator old = *this;
+        --position;
+        return old;
+    }
+    bool operator != (const iterator right) const {
+        return pos != right.pos;
+    }
+    bool operator == (const iterator right) const {
+        return pos  === right.pos;
+    }
+protected:
+    T* pos;
+};
+---------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
