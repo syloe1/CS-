@@ -1,0 +1,27 @@
+将单链表的尾节点和头节点链接起来， 单链表
+变成循环链表。
+//搜索带有头节点的循环链表
+template<class T>
+//clist类是带有头节点的循环链表 
+clist<T>::clist()  {
+	hnode = new L_node<T>();
+	hnode->ne = hnode;
+	listSize = 0;
+}
+template<class T> 
+int clist<T>::idxof(const T& tele) const {
+	hnode->ele = tele;
+	L_node<T>* cnode = hnode->ne;
+	int idx = 0;
+	while (cnode->ele != tele) {
+		cnode = cnode->ne;
+		idx++;
+	}
+	if (cnode == hnode) {
+		return -1;
+	} else {
+		return idx;
+	}
+}
+-----------------------------------------------------------
+练习： 

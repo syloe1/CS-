@@ -1,0 +1,213 @@
+每个节点只有一个链， 这种结构是单向链表
+template<class T>
+//链表节点的结构定义
+struct L_node {
+	T ele; //数据成员
+	L_node<T> *ne;
+	//默认构造参数 
+	L_node()  {}
+	//带参数的构造参数 
+	L_node(const T& ele) {
+		this->ele = ele;
+	}
+	L_node(const T& ele, L_node<T>* ne)  {
+		this->ele = ele;
+		this->ne = ne;
+	}
+}; 
+//链表节点的结构定义
+template<class T>
+class L_node : public linearList<T> {
+public:
+		L_node(int initCapacity = 10);
+		L_node(const L_node<T>&);
+		~L_node();
+		
+		//抽象类的ADT方法
+		bool empty()  const {return listSize == 0;}
+		int size() const {return listSize;}
+		T& get(int idx) const ;
+		int idxof(const T& tele) const;
+		void erase(int idx);
+		void insert(int idx, const T& tele);
+		void output(ostream& out) const;
+	protected:
+		void cIdx(int idx) const ; 
+		L_node<T>* fnode; //指向链表第一个节点的指针 
+		int listSize;   //元素个数 
+};
+//实现构造和复制构造函数
+template<class T>
+L_node<T>::L_node(int initCapacity)  {
+	if (initCapacity < 1) {
+		ostringstream s;
+		 s<<"Initial capacity = "<<initCapacity<<" must be > 0";
+		 throw illegalParameterValue(s.str());
+	}
+	fnode = nullptr;
+	listSize = 0; 
+}
+template<class T>
+L_node<T>::L_node(const L_node<T>& tnode)  {
+	listSize = this.listSize;
+	if (listSize == 0) {
+		fnode = nullptr;
+		return ;
+	}
+	//链表 tnode为非空
+	L_node<T>* snode = tnode.fnode;
+	fnode = new L_node<T>(snode->ele);
+	//复制链表tnode的首个元素
+	snode = snode->ne;
+	L_node<T>* tnode = fnode;
+	//当前链表*this的最后一个节点
+	while (snode != nullptr) { //复制剩余元素 
+		tnode->ne = new L_node<T>(snode->ele);
+		tnode = tnode->ne;
+		snode = snode->ne;
+	}
+	tnode-nex = nullptr; //链表结束 
+} 
+//析构函数
+template<class T>
+L_node<T>::~L_node()  {
+	while (snode != nullptr)  {
+		L_node<T>* nnode = fnode->ne;
+		delete fnode;
+		fnode = nnode;
+	}
+}
+//achieve get function
+template<classT>
+T& L_node<T>::get(int idx) const {
+	cIdx(idx);
+	L_node<T>* cnode = fnode;
+	for (int i = 0; i < idx; i++) {
+		cnode = cnode->ne;
+	}
+	return cnode->ele;
+} 
+//实现idxof
+template<class T>
+int L_node<T>::idxof(const T& tele)  const {
+	L_node<T>* cnode = fnode;
+	int idx = 0;
+	while (cnode != nullptr && cnode->ele != tele) {
+		cnode = cnode->ne;
+		idx++;
+	}
+	if (cnode == nullptr) {
+		return -1;
+	} else {
+		return idx;
+	}
+}
+//实现erase
+template<class T>
+void L_node<T>::erase(int idx)  {
+	cIdx(idx);
+	L_node<T>* dnode;
+	if (idx == 0) { //删除首节点 
+		dnode = fnode;
+		fnode = fnode->ne; 
+	} else {
+		L_node<T>* p = fnode;
+		for (int i = 0; i < idx - 1; i++) {
+			p = p->ne;
+		}
+		dnode = p->ne;
+		p->ne = p->ne->ne;
+	}
+	listSize--;
+	delete dnode;
+}
+//实现insert
+template<class T>
+void L_node<T>::insert(int idx, const T& tele)  {
+	if (idx < 0 || idx > listSize) {
+		ostringstream s;
+		s<<"Index = "<<idx<<" size = "<<listSize;
+		throw illegalIndex(s.str());
+	}
+	if (idx == 0) {
+		fnode = new L_node<T>(tele, fnode);
+	} else {
+		L_node<T>* p = fnode;
+		for (int i = 0; i < idx - 1; i++) {
+			p = p->ne;
+		}
+		p->ne = new L_node<T>(tele, p->ne);
+	}
+	listSize++;
+}
+//实现output
+template<class T>
+void L_node<T>::output(ostream& out) const {
+	for (L_node<T>* cnode = fnode; cnode != nullptr; cnode = cnode->ne) {
+		out<<cnode->ele<<" ";
+	}
+} 
+//重载<< 
+template<class T>
+ostream& operator<<(ostream& out, const L_node<T>& x)  {
+	x.output(out); return out;
+}
+
+//定义一个向前迭代器 
+class iterator {
+public:
+	iterator(L_node<T>* tnode = nullptr) {
+		node = tnode;
+	}
+	T& operator*() const {return node->ele;}
+	T* operator->() const {return &node->ele;}
+	
+	//迭代器加法 
+	iterator& operator++()  {
+		node = node->ne; return *this;
+	}
+	iterator operator++(int) {
+		iterator old = *this;
+		node = node->ne;
+		return old;
+	}
+	//相等检验
+	bool operator!=(const iterator right)  const {
+		return node != right.node;
+	}
+	bool operator==(const iterator right) const {
+		return node == right.node;
+	}
+protected:
+	L_node<T>* node;
+}; 
+扩展线性表的抽象类
+template<class T>
+class exlist : linearList<T> {
+public:
+	virtual ~exlist() {};
+	virtual void clear() = 0;
+	virtual void push_back(const T& tele) = 0;
+}; 
+template<class T>
+void exL_node<T>::clear() {
+	whi.e (fnode != nullptr) {
+		L_node<T>* nnode = fnode->ne;
+		delete fnode;
+		fnode = nnode;
+	}
+	listSize = 0;
+}
+template<class T>
+void exL_node<T>::push_back(const T& tele) {
+	L_node<T>* nnode = new L_node<T>(tele, nullptr);
+	if (fnode == nullptr) {
+		fnode = lnode = nnode;
+	} else {
+		lnode->ne = nnode;
+		lnode = nnode; //lnode指向链表尾节点的指针 
+	}
+	listSize++;
+}
+----------------------------------------------------------------------
+练习：
