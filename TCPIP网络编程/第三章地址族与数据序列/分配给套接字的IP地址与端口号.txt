@@ -1,0 +1,88 @@
+为了使计算机连接到网络并收发数据， 必需向其分配IP地址。
+IPV4    4字节地址族
+IPV6   16字节地址族
+
+通过网络接口卡接收的数据内有端口号，操作系统通过该端口把
+数据传输给相应端口的套接字。
+
+
+虽然端口号不能重复，但TCP套接字何UDP套接字不会共用端口号， 所以运行重复。
+
+数据传输目标地址同时包含IP地址和端口号。只有这样，
+数据才会被传输到最终的目的应用程序。
+
+表示IPv4地址的结构体
+		包含 采用什么 地址族
+			          IP地址
+					  端口号
+struct sockaddr_in 
+{
+	sa_family_t       sin_family;   //地址族
+	uint16_t          sin_port;     //16位TCP/UDP端口号
+	struct in_addr    sin_addr;     //32位IP地址
+	char			  sin_zero[8] ; //不使用 
+}
+					   
+存放32位IPV4地址的结构体
+struct in_addr {
+	In_addr_t		 s_addr; //32位IPV4地址
+}
+
+一些数据类型 参考posix。
+
+sin_family
+地址族                    含义
+AF_INET              IPv4网络协议中使用的地址族
+AF_INET6             IPv6网络协议中使用的地址族
+AF_LOCAL 		     本地通信中采用的UNIX协议的地址族
+
+
+成员sin_port
+	      保留16位端口号， 重点在于， 它以网络字节序保存
+	sin_addr 
+		  保存32位IP地址信息， 且也以网络字节序保存。
+	sin_zero
+		  只是为使结构体sockaddr_in的大小跟sockaddr结构体
+保持一致而插入的成员。
+		  
+		  
+int bind(int sockfd, struct sockaddr* myaddr, socklen_t addrlen) ;
+第二个参数值希望得到sockaddr结构体变量地址值， 包括地址族， 端口号， IP地址等。
+struct sockaddr {
+	sa_family_t sin_family;  //地址族
+	char        sa_data[14] ; //地址信息 
+}; 
+
+CPU向内存保存数据的方式有2种：
+	大端序： 高位字节存放到低位地址
+	小端序： 高位字节存放到高位地址
+
+0x20     0x21    0x22   0x23
+0x12     0x34    0x56   0x78   大端序
+假设0x20处开始的地址保存4字节int类型数0x12345678
+0x12是高位字节，
+		大端序先保存最高位字节
+		
+每种CPU的数据保存方式不同。 因此， 代表CPU数据保存方式
+的主机字节序在不同CPU中也各不相同。
+
+在通过网络传输数据时约定统一方式， 这种约定称为网络字节序， 
+非常简单----统一为大端序。
+
+即 先把数组转化为大端序格式在进行网络传输。
+计算机接收数据时应识别该数据是网络字节序格式， 小端序系统传输数据时应转化
+为大端序排列方式。
+
+字节序转化
+unsigned short htons(unsigned short)
+htons中的h 代表主机（host)字节序
+	中的n代表网络（network)字节序
+s是short, l是long. （linux中long类型占用4个字节）。
+
+通常以s作为后缀的函数中， s代表2个字节short, 用于端口号转换
+以l作为后缀的函数中，l代表4个字节， 用于IP地址转换
+
+htons 把short型数据从主机字节序转化为网络字节序
+ntohs 把short型数据从网络字节序转化为主机字节序
+除了向sockaddr_in结构体变量填充数据外， 其他情况无需考虑字节序问题
+
