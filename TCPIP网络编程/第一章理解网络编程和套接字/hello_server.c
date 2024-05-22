@@ -11,8 +11,8 @@ void error_handling(char * message) {
 }
 int main(int argc, char  *argv[])
 {
-	int serv_sock; //·şÎñ¶Ë 
-	int clnt_sock; //¿Í»§¶Ë
+	int serv_sock; //æœåŠ¡ç«¯ 
+	int clnt_sock; //å®¢æˆ·ç«¯
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in clnt_addr; 
 	socklen_t clnt_addr_size;
@@ -21,8 +21,8 @@ int main(int argc, char  *argv[])
 		printf("Usage : %s <port>\n", argv[0]);
 		exit(1);
 	}
-	sock_sock=socket(PF_INET, SOCK_STREAM, 0); //´´½¨Ì×½Ó×Ö 
-	if (serv_sock == -1) { //Á¬½ÓÊ§°ÜÁË 
+	serv_sock=socket(PF_INET, SOCK_STREAM, 0); //åˆ›å»ºå¥—æ¥å­— 
+	if (serv_sock == -1) { //è¿æ¥å¤±è´¥äº† 
 		error_handling("socket() error") ;
 	}
 	memset(&serv_addr, 0, sizeof  (serv_addr));
