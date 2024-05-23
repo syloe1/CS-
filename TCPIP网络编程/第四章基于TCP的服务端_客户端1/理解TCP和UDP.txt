@@ -1,0 +1,61 @@
+因为TCP套接字面向连接， 称为基于流的套接字。
+
+TCP/IP协议栈：
+	应用层
+  TCP  UDP层
+	IP层
+   链路层
+   
+链路层是物理链接。
+IP层： 考虑数据包的传输路径。 IP协议为u发应对数据错误。
+	problem: 路径错误 选择其他路径
+	         数据丢失或错误， 无法解决
+IP层只关注一个数据包的传输过程。 即使传输多个数据包，也是由IP层传输
+
+TCP服务器端默认的函数调用顺序
+	socket()  		 创建套接字
+	
+	bind()           分配套接字地址
+	
+	listen()         等待连接请求状态
+	
+	accept()         允许连接
+	
+	read() /write()  数据交换
+	
+	close()          断开连接
+只有调用了listen函数， 客户端才可发出连接请求的状态。
+int listen(int sock, int backlog);
+	成功时返回0， 失败时返回-1 
+	backlog是 连接请求等待队列的长度 
+	
+#include <sys/socket.h>
+int accept(int sockfd, struct sockaddr* addr, socklen_t *addrlen);
+	成功返回文件描述符， 失败返回-1 
+accept函数受理连接请求队列待处理的客户端连接请求。 函数调用成功时， accept函数内部将
+产生用于数据I/O的套接字， 并返回文件描述符。 套接字自动创建， 自动与发起连接请求的客户端建立连接。
+TCP客户端调用函数顺序 
+	socket ()       创建套接字 
+	connect()       请求连接 
+	read / write()  交换数据 
+	close ()        断开连接 
+
+#include <sys/socket.h>
+int connect(int sockfd, struct sockaddr* serv_addr, socklen_t addrlen);
+	成功时返回0，失败时返回-1 
+客户端调用connect函数后， 发生下面情况之一 才会返回
+  1. 服务器端接收连接请求
+  2. 发生断网等异常情况而中断连接请求
+ 
+ 接收连接并不意味着服务端调用accept函数， 服务器端把连接请求信息
+ 记录到等待队列，。 connect函数并不立即进行数据交换。
+
+网络数据交换必须分配IP和端口。 
+ 客户端 调用connect函数时 分配IP
+		操作系统 、、 内核
+		IP用主机IP, 端口随机
+
+	调用connect函数时自动分配， 不需要调用bind函数
+
+实现迭代回声服务器端和配套的回声客户端。
+echo_server.c echo_client.c
