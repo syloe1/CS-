@@ -1,0 +1,31 @@
+UDP套接字的特点：
+	为了提供可靠的数据传输服务， TCP在不可靠的
+	IP层进行流控制， 而UDP就缺少这种控制机制.
+	TCP的速度无法超过UDP, 但在收发某些类型的数据时，
+	有可能接近UDP. 每次交换的数据量越大， TCP的传输速率就越
+	接近UDP的传输速率。
+
+UDP最重要的作用就是根据端口号将
+传到主机的数据包交付给最终的UDP套接字。
+
+TCP比UDP慢的原因：
+	收发数据前后进行的连接设置及清除过程
+	收发数据中为保证可靠性而添加的流控制
+
+UDP中客户端和服务端都只需要1个套接字。
+只要一个UDP套接字就能和多台主机通信
+
+基于UDP的数据I/O函数
+
+UDP套接字不会保持连接， 每次传输需要添加目标地址信息 
+#include <sys/socket.h> 
+ssize_t sendto(int sock, void *buff, size_t nbytes, int flags,
+	struct sockaddr* to, socklen_t addrlen);
+	flags可选项参数， 没有就传递0
+	to存由目标地址信息的sockaddr结构体变量的地址值
+	addrlen 传递给参数to的地址值结构体变量长度 
+
+#include <sys/socket.h> 
+ssize_t recvfrom(int sock, void *buff, size_t nbytes, int flags,
+	struct sockaddr* from, socklen_t *addrlen);
+		成功返回接收的字节数， 失败返回-1 
