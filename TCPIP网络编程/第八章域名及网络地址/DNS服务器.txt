@@ -1,0 +1,22 @@
+DNS是对IP地址和域名进行相互转换的系统， 其核心
+是DNS服务器
+
+利用域名获取IP地址
+#include <netdb.h> 
+struct hostent* gethostbyname(const char* hostname);
+	成功时返回hostent结构体地址， 失败时返回NULL指针
+	
+	struct hostent {
+		char * h_name; //official name 官方域名 
+		char ** h_aliases; //alias list
+		int h_addrtype; //host address type 地址族信息 
+		int h_length; //address length 保持IP地址长度 
+		char ** h_addr_list; //address list
+	}; 
+
+利用IP地址获取域名
+#include <netdb.h> 
+struct hostent* gethostbyaddr(const cahr* addr, socklen_t len, int family);
+成功时返回hostent结构体地址， 失败时返回NULL指针
+
+
