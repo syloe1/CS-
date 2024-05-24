@@ -1,0 +1,30 @@
+读取套接字可选项
+#include <sys/socket.h> 
+int getsockopt(int sock, int level, int optname, void* optval, socklen_t *optlen);
+	成功时返回0，失败时返回-1
+	level要查看的可选项的协议层
+	optname要查看的可选项名
+	optval保存查看结果的缓冲地址值
+	optlen 向optval传递的缓冲大小。调用函数后， 该变量中保存通过第
+	四个参数返回的可选项信息的字节数
+	
+int setsockopt(int sock, int level, int optname, const void* optval, socklen_t optlen)  ;
+	成功时返回0， 失败时返回-1
+
+SO_RCVBUF是输入缓冲大小相关可选项。
+SO_SNDBUF是输出缓冲大小相关可选项。
+
+不管是服务器端还是客户端， 套接字都会有
+Time-wait过程。 先断开连接的套接字
+必然会经过Time-wait过程。
+
+
+TCP套接字默认使用Nagle算法交换数据， 因此最大限度地进行缓冲， 直到收到ACK
+
+
+有些情况， 不使用Nagle算法更快。
+ eg:	
+	在传输大文件数据， 将文件数据传入输出缓冲不会花费
+	太多时间。 不使用Nagle算法，也会在装满输出缓冲时传输数据包。
+	
+	
