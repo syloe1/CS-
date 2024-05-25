@@ -1,0 +1,45 @@
+send & recv函数
+
+#include <sys/socket.h>
+
+ssize_t send(int sockfd, const void* buf, size_t nbytes, int flags);
+	成功时返回发送的字节数， 失败时返回-1 
+
+#include <sys/socket.h> 
+ssize_t recv(int sockfd, void* buf, size_t nbytes, int flags);
+	成功时返回接收的字节数， 失败时返回-1 
+	
+	flags是可选项参数 
+	
+MSG_OOB: 发送紧急消息
+
+
+fcntl(recv_sock, F_SETOWN, getpid())
+fcntl函数用于控制文件描述符，
+	语句作用： 
+		将文件描述符recv_sock指向的套接字拥有者F_SETOWN
+		改为getpid函数返回值值用作ID的进程
+
+
+带外数据的含义是：
+	通过完全不同的通信路径传输的数据
+	
+真正意义上的out-of-band需要通过单独的通信路径高速传输数据， 但
+TCP不另外提供， 只利用TCP的紧急模式进行传输。
+
+TCP头中含有如下两种信息：
+ URG=1； 载有紧急消息的数据包
+ URG指针： 紧急指针位于偏移量为3的位置
+ 
+偏移量就是参照基准位置表示相对位置的量。
+
+readv & writev函数
+ 对数据进行整合传输及发送的函数
+#include <sys/uio.h> 
+ssize_t writev(int fieldes, const struct iovec* iov, int iovcnt);
+	成功返回发送的字节数， 失败时返回-1
+	struct iovec {
+		void * iov_base; //缓冲地址
+		size_t iov_len;  //缓冲大小 
+	}; 
+	
