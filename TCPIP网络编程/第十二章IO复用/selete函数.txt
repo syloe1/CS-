@@ -1,0 +1,25 @@
+设置文件描述符
+指定监视范围
+设计超时
+调用write
+查看调用结果
+
+设置文件描述符:
+	FD_ZERO(fd_set * fdset) ; 将fd_set变量的所有位初始化0
+	FD_SET(int fd, fd_set* fdset) ; 在参数fdset指向的变量中注册文件描述符fd的信息
+	FD_CLR(int fd, fd_set* fdset) ; 在参数fdset指向的变量中中清除文件描述符fd的信息
+	FD_ISSET(int fd, fd_set* fdset); 参数fdset指向的变量中包含文件描述符fd的信息。 
+设置检查范围及超时
+#include <sys/select.h> 
+#include <sys/time.h>
+int select(
+	int maxfd, fd_set* readset, fd_set* writeset, fd_set* exceptset,
+	const struct timeval* timeout);
+	 reaadset是否存在读取数据
+	 writeset是否存在可传输无阻塞数据
+	 exceptset是否发生异常
+struct timeval {
+	long tv_sev;    //seconds
+	long tv_usec;   //microseconds
+};
+
