@@ -1,0 +1,12 @@
+分离IO流是一种常用表达
+分离流的好处：
+    通过分开输入过程和输出过程降低实现难度
+    与输入无关的输出操作可以提高速度
+
+文件描述符的复制方法
+#include <unistd.h>
+int dup(int fildes);
+int dup2(int fildes, int fildes2);
+    成功返回复制的文件描述符， 失败时返回-1
+    fildes复制的文件描述符
+    fildes2确定指定的文件描述符整数值
