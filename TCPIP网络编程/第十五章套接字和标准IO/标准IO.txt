@@ -1,0 +1,14 @@
+标准IO函数缺点：
+	不容易进行双向通信
+	有时可能频繁调用fflush函数
+	需要以FILE结构体指针的形式返回文件描述符号
+利用fdopen函数转换为FILE结构体指针
+#include <stdio.h>
+FILE* fdopen(int fildes, const char * mode);
+	失败返回null,成功返回FILE结构体指针 
+
+利用fileno函数转换为文件描述符 
+#include <stdio.h>
+int fileno(FILE* stream) ;
+	成功返回转换后的文件描述符 
+	
