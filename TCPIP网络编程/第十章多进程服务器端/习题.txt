@@ -1,0 +1,99 @@
+(1）下列关于进程的说法
+a.从操作系统的角度上说，进程是程序运行的单位。
+b.进程根据创建方式建立父子关系。
+c.进程有独立的内存空间，一个进程的内存空间不可能包含其他进程。每个进程都有自己独立的地址空间，进程之间通过进程间通信（IPC）机制进行交互，而不是通过共享内存空间的方式包含其他进程。
+d.子进程可以创建其他子进程，而创建出来的子进程还可以创建其子进程，但所有这些
+进程只与一个父进程建立父子关系。
+
+(2)调用fork函数将创建子进程，以下关于子进程的描述
+a.子进程的生命周期与父进程的生命周期是独立的。即使父进程结束了，子进程仍然可以继续执行，除非它们被显式地终止或者它们的父进程是 init 进程。
+b.子进程是复制父进程所有资源创建出的进程。
+c.父子进程共享全局变量。
+d.通过fork函数创建的子进程将执行从fork函数调用点开始的代码。
+
+(3）创建子进程时将复制父进程的所有内容，此时的复制对象也包含套接字文件描述符。
+编写程序验证复制的文件描述符整数值是否与原文件描述符整数值相同。
+	#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int main() {
+    int sockfd[2]; // 创建一个套接字对，索引0用于读取，索引1用于写入
+    int result = socketpair(AF_UNIX, SOCK_STREAM, 0, sockfd);
+    
+    if (result == -1) {
+        perror("socketpair");
+        return 1;
+    }
+
+    pid_t pid = fork(); // 创建子进程
+
+    if (pid == -1) {
+        perror("fork");
+        return 1;
+    }
+
+    if (pid == 0) { // 子进程
+        printf("Child process:\n");
+        printf("Child process socket fd: %d\n", sockfd[0]);
+    } else { // 父进程
+        printf("Parent process:\n");
+        printf("Parent process socket fd: %d\n", sockfd[0]);
+    }
+
+    return 0;
+}
+
+(4)请说明进程变为僵死进程的过程及预防措施。
+	
+当一个进程终止时，其父进程必须调用 wait() 或 waitpid() 函数来获取子进程的终止状态，否则子进程会成为僵死进程。僵死进程是指已经终止但是其父进程尚未调用 wait() 或 waitpid() 函数来获取其终止状态的进程。
+
+进程变成僵死进程的过程如下：
+
+子进程终止：子进程完成其工作或者异常终止。
+子进程成为僵死进程：子进程终止，但是其父进程没有调用 wait() 或 waitpid() 函数来获取其终止状态。
+资源释放：尽管子进程已经终止，但其在内核中的进程表仍然存在，占用系统资源。
+预防僵死进程的措施主要包括：
+
+父进程及时调用 wait() 或 waitpid() 函数来获取子进程的终止状态。这样子进程就不会成为僵死进程，其资源会被及时释放。
+使用信号处理程序：父进程可以注册 SIGCHLD 信号的处理程序，在子进程终止时捕获该信号，然后调用 wait() 或 waitpid() 函数处理僵死进程。
+设置 SIG_IGN 信号处理程序：父进程可以将 SIGCHLD 信号的处理程序设置为 SIG_IGN，这样子进程终止时系统会自动处理僵死进程。
+使用双重 fork()：父进程可以通过双重 fork() 来创建子进程，子进程会成为孤儿进程并被 init 进程收养，而父进程可以立即退出，从而避免僵死进程的产生。
+(5）如果在未注册SIGINT信号的情况下输入Ctrl+C，将由操作系统默认的事件处理器终止程序。
+但如果直接注册Ctrl+C信号的处理器，则程序不会终止，而是调用程序员指定的事件处理器。
+编写注册处理函数的程序，完成如下功能：
+“输入Ctrl+C时，询问是否确定退出程序，输入Y则终止程序。”
+另外，编写程序使其每隔1秒输出简单字符串，并适用于上述时间处理器注册代码。
+
+	#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+
+// SIGINT 信号处理器
+void sigint_handler(int signum) {
+    char choice;
+    printf("\nReceived SIGINT (Ctrl+C). Do you really want to quit? (Y/N): ");
+    scanf(" %c", &choice);
+
+    if (choice == 'Y' || choice == 'y') {
+        printf("Exiting...\n");
+        exit(0);
+    } else {
+        printf("Continuing...\n");
+    }
+}
+
+int main() {
+    // 注册 SIGINT 信号处理器
+    signal(SIGINT, sigint_handler);
+
+    // 每隔 1 秒输出一个字符串
+    while (1) {
+        printf("Running...\n");
+        sleep(1);
+    }
+
+    return 0;
+}
