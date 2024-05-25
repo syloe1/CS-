@@ -1,0 +1,53 @@
+子进程究竟何时终止 ? 调用waitpid函数后要无休止地等待吗
+
+子进程的识别主体是操作系统。
+若擦操作系统告诉父进程，现在要处理子进程相关事宜。
+信号是在特定事件发生时由操作系统向进程发送的消息。
+
+请求操作系统调用特定函数：
+#include <signal.h> 
+void (*signal(int signo, void (*func)(int)))(int);
+	为了在产生信号时调用， 返回之前注册的函数指针
+	
+	返回类型： 参数为int型， 返回void型函数中指针 
+	SIGALRM  已到通过调用alarm函数注册的时间
+	SIGINT   输出CTRL + C 
+	SIGCHLD: 子进程终止 
+实现一些语句： 
+		终止子进程时调用mychild函数
+			signal(SIGCHLD, mychild) ;
+
+		输入CTRL + C调用keycontrol函数
+			signal(SIGINT, keycontrol);
+		
+		已到通过alarm函数注册的时间， 并调用timeout函数
+			signal(SIGALRM, timeout);
+	
+函数在Unix/Linux系统中用于设置一个定时器，
+该定时器在指定的秒数后发送一个 SIGALRM 信号给调用进程。
+#include <unistd.h>
+unsigned int alarm(unsigned int second);
+	返回0或以秒为单位的距SIGALRM信号发生所剩时间 
+
+
+signal函数在UNIX系列的不同操作系统中可能存在区别， 但
+sigaction函数完全相同。
+
+#include <signal.h>
+int sigaction(int signo, const stuct sigaction* act, struct sigaction* oldact);
+	成功时返回0， 失败时返回-1
+
+	signo传递信号信息
+	act对应于第一个参数的信号处理函数（信号处理器）信息
+	oldact通过此函数获取之前注册的信号处理函数指针，
+	不需要传递0
+
+struct sigaction {
+	void (*sa_handler)(int);  //信号处理函数的指针值
+	sigset_t sa_mask;		
+	int ss_flags;
+}; 
+
+利用信号处理函数消灭僵尸进程
+	子进程 终止时会产生SIGCHLD信号
+
