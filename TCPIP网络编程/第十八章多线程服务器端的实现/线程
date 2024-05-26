@@ -1,0 +1,55 @@
+创建进程， 每个进程具有独立的内存空间， 进程间通信的
+实现难度也会随之增加。
+
+多线程模型的缺点：
+    创建进程的过程会带来一定的开销
+    为了完成进程间数据交换， 需要特殊的IPC技术
+
+线程相比于进程的优点：
+    线程的创建和上下文切换比进程的创建和上下文切换更快
+    线程间交换数据时无需特殊技术
+
+
+进程： 在操作系统中构成单独执行流的单位
+线程： 在操作系统中构成单独执行流的单位
+
+根据临界区是否引起问题:
+    线程安全函数
+    非线程安全函数
+线程安全函数被多个线程同时调用时也不会引发问题。
+
+
+线程同步：
+    同时访问同一内存空间时发生的情况
+    需要指定访问同一内存空间的线程执行顺序的情况
+
+ 互斥量和信号量 2种同步技术
+互斥量是一把优秀的锁， 下面介绍互斥量的创建和销毁函数
+
+#include <pthread.h>
+int pthread_mutex_init(pthread_mutex_t * mutex, const pthread_mutexattr_t * attr);
+int pthread_mutex_destory(pthread_mutex_t * mutex);
+	mutex创建互斥量时传递保存互斥量的变量地址值， 销毁时传递需要
+	销毁的互斥量地址值
+	attr传递即将创建互斥量属性， 
+	如果不需要配置特殊的互斥量属性， 则向第二个参数传递NULL时， 可以
+	利用PTHREAD_MUTEX_INITIZER宏进行声明
+		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER 
+
+互斥量锁住或者释放临界区
+#include <pthread.h> 
+int pthread_mutex_lock(pthread_mutex_t * mutex);
+int pthread_mutex_unlock(pthread_mutex_t * mutex);
+线程退出临界区时， 如果忘了调用pthread_mutex_unlock函数，
+那么其他为了进入临界区而调用pthread_mutex_lock函数的线程就无法摆脱阻塞状态。
+这种情况是死锁。
+
+给出信号量的创建和销毁方法
+
+销毁线程的3种方法
+    调用pthread_join函数， 不仅会等待线程终止， 还会引导线程销毁。
+    该函数的问题是， 线程终止前， 调用该函数的线程将进入阻塞状态。
+
+ #include <pthread.h>
+int pthread_detach(pthread_t thread);
+	
