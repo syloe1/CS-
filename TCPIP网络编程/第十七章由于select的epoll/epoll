@@ -1,0 +1,72 @@
+调用select函数后常见的针对所有文件描述符的循环语句
+每次调用select函数时都需要向该函数传递监视对象信息
+
+
+select函数
+    服务器接入者少
+    程序应具有兼容性
+
+epoll服务器端实现中3个函数：
+    epoll_create: 创建保存epoll文件描述符的空间
+    epoll_ctl: 向空间注册并注销文件描述符
+    epoll_wait: 与select函数类似， 等待文件描述符发生变化
+
+struct epoll_event {
+	__uint32_t events;
+	epoll_data_t data;
+} 
+
+	typedef union epoll_data {
+		void * ptr;
+		int fd;
+		__uint32_t u32;
+		__uint64_t u64;
+	} epoll_data_t;
+
+epoll_create函数
+#include <sys/epoll.h> 
+int epoll_create(int size);
+	成功时返回epoll文件描述符， 失败时返回-1 
+
+生成epoll例程后， 应该向其内部
+注册监视对象文件描述符，使用epoll_ctl函数
+
+#include <sys/epoll.h> 
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event* event);
+    epfd用于注册监视对象的epoll例程的文件描述符
+    op用于指定监视对象添加、删除或更改等操作
+    event监视对象的事件类型
+
+与select函数对应的epoll_wait函数， epoll相关函数中默认最后调用该函数
+#include <sys/epoll.h> 
+int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout) ;
+	成功时返回发生的文件描述符， 失败时返回-1
+
+epoll中 
+	条件触发  LT
+	边缘触发  ET 
+	
+	条件触发方式中， 只要输入缓冲有数据就会一直通知该事件。
+
+	边缘触发中 输入缓冲收到数据时仅注册1次事件。即使输入缓冲中还留有数据，
+	也不会再进行注册。
+
+SELECT模型是以条件触发的方式工作的， 输入缓冲中如果还剩有数据， 肯定会注册事件。
+
+实现边缘触发的必知内容：
+	通过errno变量验证错误原因
+	为了完成非阻塞IO, 更改套接字
+
+	linux声明了以下全局变量
+		int errno 需要用error.h头文件
+
+	read函数发现输入缓冲中没有数据可读时返回-1， 同时在errno中保存EAGAIN变量
+
+	#include <fcntl.h>
+	int fcntl(int filedes, int cmd, ..);
+
+边缘触发可以分离接收数据和处理数据的时间点。
+
+从实现模型角度看， 边缘触发更有可能带来高性能。
+
+
