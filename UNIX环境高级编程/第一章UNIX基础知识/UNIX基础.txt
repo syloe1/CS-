@@ -1,0 +1,90 @@
+操作习题可定义为一种软件： 内核。
+内核的接口被称为系统调用， 公用函数库构建在系统调用
+接口之上， 应用程序既可使用公用函数库， 也可以使用系统调用
+调用。
+    系统在其口令文件中查看登录名。
+            登录名：
+                登录名 加密口令 数字用户ID 数字组ID 注释字段 起始目录 shell程序
+
+            shell是一个命令行解释器， 它读取用户输入， 然后执行命令。
+    
+
+文件系统是目录和文件的一种层次结构， 所有东西的起点都是称为根的目录
+文件属性是 文件类型 文件大小 文件所有者 文件权限 文件最后修改时间
+点指向当前目录， 点点指向父目录。
+
+#include <unistd.h>
+ssize_t read(int fd, void *buf, size_t count);
+ssize_t write(int fd, const void *buf, size_t count);
+fd：文件描述符，用于指定要读取或写入的文件或套接字。
+buf：指向缓冲区的指针，用于存放读取的数据或要写入的数据。
+count：要读取或写入的字节数
+
+程序是一个存储在磁盘上某个目录中的可执行文件。 内核使用exec函数将程序
+读入内存， 并执行程序。
+程序的执行实例被称为进程， 每个进程都有一个唯一的数字标志符，
+称为进程ID. (非负整数
+
+
+有三个进程控制的主要函数： fork exec 和 waitpid
+
+
+pid_t waitpid(pid_t pid, int *status, int options);
+waitpid() 函数用于等待指定的子进程结束，并返回子进程的进程 ID。它还可以通过 status 参数获取子进程的终止状态，以及通过 options 参数控制等待的行为。
+
+一个进程内的所有线程共享同一地址空间， 文件描述符，栈与进程相关的属性。
+
+linux支持多线程存取errno:
+	extern int *__errno_location(void)
+	#define errno (*__errno_location())
+errno的两条规则：
+	如果没有出错， 其值不会被例程清除。 仅当返回值出错时，才检验其值
+	任何函数都不会将errno值设置为0
+	
+#include <string.h>
+char *strerror(int errnum); 返回值： 指向消息字符串的指针
+
+函数用法：
+	#include <stdio.h>
+	#include <string.h>
+	#include <errno.h>
+
+	int main() {
+		int errnum = EACCES; // 示例错误码，表示权限不足
+		printf("错误消息: %s\n", strerror(errnum));
+		return 0;
+	}
+strerror函数将errnum映射成一个出错字符串， 并且返回此字符串的指针
+perror基于errno的当前值， 在标准错误上产生一条出错消息， 然后返回。
+#include <stdio.h>
+void perror(const char* msg)
+
+函数用法：	
+	#include <stdio.h>
+	#include <errno.h>
+
+	int main() {
+		FILE *fp;
+		fp = fopen("nonexistentfile.txt", "r");
+		if (fp == NULL) {
+			perror("打开文件失败");
+		}
+		return 0;
+	}
+
+出错恢复：
+	errno头文件中定义了两类错误： 致命 和 非致命
+		致命只能打印一条消息， 然后退出
+		非致命出错：
+			EAGAIN, ENFILE, ENOBUFS, ENOLCK
+			ENOSPC, EWOULDBLOCK
+用户ID为0的是根用户或者超级用户
+
+UNIX系统为进程维护了3个进程时间值：
+	时钟时间
+	用户CPU时间
+	系统CPU时间
+要获取进程的时钟时间 用户时间 系统时间 只要执行命令time
+cd /usr/include
+root@o:/usr/include# time -p grep _POSIX_SOURCE */*.h /dev/null
+
