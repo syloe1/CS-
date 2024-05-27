@@ -1,0 +1,13 @@
+运行限制：
+#include <unistd.h>
+long sysconf(int name);
+long pathconf(const char * pathname, int name);
+long fpathconf(int fd, int name);
+
+守护进程， 在后台运行且不与终端相连接的一种进程。
+假定<sys/param.h>中定义了常量NOFILE
+#include <sys/param.h>
+for (i = 0; i < NOFILE; i++)
+	close(i)
+
+
