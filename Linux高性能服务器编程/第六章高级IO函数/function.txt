@@ -1,0 +1,91 @@
+创建文件描述符的函数： pipe 和 dup /dup2
+用于读写数据的函数： readv/writev   sendfiule mmap/munmap splice tee
+
+pipe函数用于创建一个管道， 以实现进程间通信
+#include <unistd.h>
+int pipe(int fd[2])
+往fd[1]写入的数据可以从fd[0]读出。并且
+fd[0]只能从管道读出数据， fd[1]只能用于往管道写入数据。
+
+
+它能够方便地创建双向管道。
+#include <sys/types.h>
+#include <sys/socket.h>
+int socketpair(int domain, int type, int protocol, int fd[2]);
+
+下面复制文件描述符的dup或dup2函数来实现：
+	#include <unistd.h>
+	int dup(int file_descriptor);
+	int dup2(int file_descriptor_one, int file_descriptor_two);
+
+
+readv函数将数据从文件描述符读到分散的内存块，即分散读。 
+writev函数则将多块分散的内存数据一并写入文件描述符， 即集中写。
+#include <sys/uio.h>
+ssize_t readv(int fd, const struct iovec* vector, int count);
+ssize_t writev(int fd, const struct iovec* vector, int count);
+vector参数类型是iovec结构数组
+
+
+
+mmap函数用于申请一段内存空间。我们可以将这段内存作为进程间通信的共享内存， 也可以将文件直接映射到其中。 munmap函数释放由mmap创建的这段内存空间。
+#include <sys/mman.h>
+void * mmap(void * start, size_t length, int prot, int flags,
+int fd, off_t offset);
+int munmap(void * start, size_t length);
+prot参数选择：
+	PROT_READ   内存段可读
+	PROT_WRITE  内存段可写
+	PROT_EXEC   内存段可执行
+	PROT_NONE   内存段不能被访问
+
+
+splice函数用于在两个文件描述符之间移动数据， 也就是零拷贝操作。
+#include <fcntl.h>
+ssize_t splice(int fd_in, loff_t* off_in, int fd_out, loff_t * off_out, size_t len, unsigned int flags);
+
+flags参数：
+	SPLICE_F_MOVE
+	SPLICE_F_NONBLOCK   非阻塞的splice操作， 但实际效果还会受到文件描述符本身的阻塞状态的影响
+	SPLICE_F_MORE	    给内核的一个提升， 后续的splice调用将读取更多数据
+	SPLICE_F_GIFT       对splice没效果
+
+
+
+tee函数
+#include <fcntl.h>
+ssize_t tee(int fd_in, int fd_out, size_t len, unsigned int flags);
+
+tee函数成功时返回在两个文件描述符之间复制的数据数量。
+
+
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ...)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
