@@ -1,0 +1,255 @@
+socket地址API, 一个IP地址和端口对。
+唯一地表示了使用TCP通信的一端。
+
+socket基础API， 创建socket, 命名socket, 监听socket、接受连接、 发起连接、 读写数据、获取地址信息。
+
+字节序： 大端字节序 和 小端字节序
+大端字节序是一个整数高位字节存储在内存的低地址处。
+
+通用socket地址 是结构体 sockaddr
+#include <bits/socket.h>
+struct sockaddr {
+ 	sa_family_t sa_family;
+	char sa_data[14];
+}
+
+协议族    地址族     描述
+PF_INET	    AF_INET    TCP/IP协议族
+新的socket地址结构体
+#include <bits/socket.h>
+struct sockaddr_storage {
+	sa_family_t sa_family;
+	unsigned long int __ss_align;
+	char __ss_padding[128-sizeof(__ss_align)];
+} 提供足够大的空间用于存放地址值， 而且是内存对齐
+专用socket地址结构体
+#include <sys/un.h>
+struct sockaddr_un {
+	sa_family sin_family; //地址族， AF_UNIX
+	char sun_path[108];	//文件路径名
+};
+
+TCP/IP协议族有sockaddr_in 何 sockaddr_in6两个专用socket地址结构体
+struct sockaddr_in {
+	sa_family_t sin_family;	//地址族
+	u_int16_t sin_port;	//端口号
+	struct in_addr sin_addr; //IPv4地址结构体
+};
+struct in_addr {
+	u_int32_t s_addr; //IPv4地址
+};
+struct sockaddr_in6 {
+	sa_family_t sin6_family; //地址族
+	u_int16_t sin6_port;
+	u_int32_t sin6_flowinfo; //流信息
+	struct in6_addr sin6_addr; //IPv6地址体
+	u_int32_t sin6_scope_id;
+};
+struct in6_addr {
+	unsigned char sa_addr[16]; 
+};
+
+
+下面3个函数可以将点分十进制字符串表示的IPv4地址和网络字节序整数表示的ipv4地址之间的转换
+#include <arpa/inet.h>
+in_addr_t inet_addr(const char * strptr);
+int inet_aton(const char * cp, struct in_addr* inp);
+char *inet_ntoa(struct in_addr in);
+
+inet_ntoa函数将用网络字节序整数表示的IPv4转化为用点分十进制字符串表示的IPv4地址， 该函数内部用一个静态变量存储转化结果， 函数的返回值指向该静态内存。
+
+#include <arpa/inet.h>
+int inet_pton(int af, const char *src, void * dst);
+const char * inet_ntop(int af, const void * src, char * dst, socklen_t cnt);
+把字符串的IP地址转换为网络字节序整数表示的IP地址， 存在dst指向的内存中， af指定地址族。
+
+创建socket
+#include <sys/types.h>
+#include <sys/socket.h>
+int socket(int domain, int  type, int protocol);
+	domain 协议族
+	type服务类型 SOCK_STREAM或SOCK_UGRAM	
+	protocol指定具体协议
+
+创建socket时， 我们给它指定了地址族， 但是并未指定使用该地址族中的哪个具体socket地址。
+将一个socket与socket地址绑定称为给socket命名。(bind)
+#include <sys/types.h>
+#include <sys/socket.h>
+int bind(int sockfd, const struct sockaddr* my_addr, socklen_t addrlen);
+bind函数将my_addr所指的socket地址分配给未命名的sockfd文件描述符。
+	失败返回errno:
+		EACCES 被绑定的是受保护地址， 仅超级用户能访问
+		EADDRINUSE被绑定的地址在使用。
+
+监听队列以存放待处理的客户连接：
+	#include <sys/socket.h>
+	int listen(int sockfd, int backlog);
+	backlog是内核监听队列的最大长度
+	超过backlog服务端不接受新连接， 客户端收到ECONNREFUSED错误
+
+从listen监听队列中接受一个连接：
+#include <sys/types.h>
+#include <sys/socket.h>
+int accept(int sockfd, struct sockaddr* addr, socklen_t *addrlen);
+ addr参数用来获取被接受连接的远端socket地址， 该socket地址由addrlen参数指出.
+
+
+accept函数只是从监听队列中取出连接。而不论连接处于何种状态， 更不关心网络状态的变化。
+
+客户端发起连接：
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	int connect(int sockfd, const struct sockaddr* serv_addr, socklen_t addrlen);
+	serv_addr参数是服务器监听的socket地址， addrlen指定地址长度
+		errno:
+			ECONREFUSED目标端口不存在， 连接被拒绝
+			ETIMEDOUT连接超时
+	
+
+关闭连接
+	#include <unistd.h>
+	int close(int fd);fd参数是待关闭的socket. close将fd的引用计数减1. 只有当fd的引用计数为0时， 才真正关闭连接。
+	多进程程序中， 我们必须在父进程和子进程中都对该socket执行close调用才能将连接关闭。
+
+	无论如何都要关闭连接。 
+		#include <sys/socket.h>
+		int shutdown(int sockfd, int howto);
+	howto决定了shutdown的行为
+		SHUT_RD	关闭sockfd上读的一半，不在针对socket文件描述符执行该操作， 并且该socket接受缓冲区中的数据都被丢弃
+		SHUT_WR  关闭写的一半， sockfd的发送缓冲区中的数据会在真正关闭连接之前全部发送出去， 应用程序不可再对该socket文件描述符执行写操作
+		SHUT_RDWR  同时关闭
+TCP数据读写
+
+#include <sys/types.h>
+#include <sys/socket.h>
+ssize_t recv (int sockfd, void * buf, size_t len, int flags);
+ssize_t send(int sockfd, const void * buf, size_t len, int flags);
+	buf缓冲区位置
+	len缓冲区大小
+
+	FLAG参数：
+	MSG_OOB 发送或接收紧急数据
+
+
+
+UDP读写：
+	#include<sys/types.h>
+	#include<sys/socket.h>
+	ssize_t recvfrom(int sockfd, void * buf, size_t len, int flags, struct sockaddr* src_addr, socklen_t* addrlen);
+	ssize_t sendto(int sockfd, const void * buf, size_t len, int flags, const struct sockaddr* dest_addr, socklen_t addrlen);
+
+
+通用数据读写函数：
+	#include <sys/socket.h>
+	ssize_t recvmsg(int sockfd, struct msghdr * msg, int flags);
+	ssize_t sendmsg(int sockfd, struct msghdr * msg, int flags);
+
+
+struct msghdr {
+	void *msg_name; //socket 地址
+	socklen_t msg_namelen; //socket地址的长度
+	struct iovec* msg_iov; //分数的内存块
+	int msg_iovlen;	//分数内存块的数量
+	void * msg_control; //指向辅助数据的起始位置
+	socklen_t msg_control; //辅助数据的大小
+	int msg_flags; //复制函数中的flags参数， 并在调用中更新
+};
+
+struct iovec {
+	void * iov_base; //内存起始地址
+	size_t iov_len; //这块内存的长度
+};
+
+#include <sys/socket.h>
+int sockatmark(int sockfd); //判断sockfd是否处于带外标记， 即下一个被读取到的是否是带外数据
+
+地址信息函数
+#include <sys/socket.h>
+int getsockname(int sockfd, struct sockaddr* address, socklen_t * address_len);
+int getpeername(int sockfd, struct sockaddr* address, socklen_t * address_len);
+
+socket选项
+#include <sys/socket.h>
+int getsockopt(int sockfd, int level, int option_name, void * option_value, socklen_t* restrict option_len);
+int setsockopt(int sockfd, int level,
+int option_name, void * option_value, socklen_t* option_len;
+
+
+SO_LINGER选项
+ 	设置SO_LINGER选项的值时， 我们需要给setsockopt系统调用传递一个linger类型的结构体。
+#include<sys/socket.h>
+struct linger {
+	int l_onoff; //开启 还是 关闭
+	int l_linger; //滞留时间
+};
+
+
+
+
+网络信息API:
+	#include <netdb.h>
+	struct hostent* gethostbyname(const char* name);
+	struct hostent {
+		char *h_name; //主机名
+		char ** h_aliases; //主机别名列表
+		int h_addrtype;
+		int h_length;	//地址长度
+		char ** h_addr_list	//网络字节序列出的主机IP地址列表
+};
+
+
+#include <netdb.h>
+struct servent* getservbyname(const char * name, const char * proto);
+struct servent* getservbyport(int port, const char * proto);
+结构体servent
+#include <netdb.h>
+struct servent {
+	char * s_name; //服务名称
+	char ** s_aliases; //服务的别名列表
+	int s_port; //端口号
+	char * s_proto; //服务类型
+
+getadrinfo函数既能通过主机名获得IP地址，
+也能通过服务名获得端口号
+#include <netdb.h>
+int getaddrinfo(const char * hostname, const char * service, const struct addrinfo* hints, struct addrinfo** result);
+结构体	
+struct addrinfo {
+	int ai_flags;
+	int ai_family;
+	int ai_socktype;
+	int ai_protocol;
+	socklen_t ai_addrlen;
+	char * ai_canonname;
+	struct sockaddr* ai_addr;
+	struct addrinfo* ai_next;
+};
+
+释放内存
+#include <netdb.h>
+void freeaddrinfo(struct addrinfo* res);
+
+#include <netdb.h>
+int getnameinfo(const struct * sockaddr, socklen_t addrlen, char * host, socklen_t hostlen, char * serv, socklen_t servlen, int flags);
+
+
+错误码转换为字符串形式
+#include <netdb.h>
+const char * gai_strerror(int error);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
