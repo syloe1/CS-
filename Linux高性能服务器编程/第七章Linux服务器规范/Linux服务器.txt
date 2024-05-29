@@ -1,0 +1,102 @@
+linux服务器程序一般以后台进程形式运行。 后台进程又称为守护进程，它没有控制进程， 因而也不会因为意外接收用户输入。
+守护进程的父进程通常是 init进程。
+
+syslog函数
+#include <syslog.h>
+void syslog(int priority, const char * message, ...);
+
+日志有下面几个：
+	#include <syslog.h>
+	#define LOG_EMERG 0 系统不可用  
+	#define LOG_ALERT 1 报警， 需要立即采取动作
+	#define LOG_CRIT  2 非常严重的情况
+	#define LOG_ERR	  3 错误
+	#define LOG_WARNING 4 警告
+	#define LOG_NOTICE 5 通知
+	#define LOG_INFO   6 信息
+	#define LOG_DEBUG  7 调试
+
+进一步结构化日志内容：
+	#include <syslog.h>
+	void openlog(const char * ident, int logopt, int facility);
+
+	#include <syslog.h>
+	int setlogmask(int maskpri);
+	maskpri指定日志掩码位， 该函数始终会成功。。
+	
+关闭日志：
+	#include <syslog.h>
+	void closelog();
+
+用户信息：
+
+	#include <sys/types.h>
+	#include <unistd.h>
+	uid_t getuid(); //获取真实用户ID
+	uid_t geteuid(); //获取有效用户ID
+	gid_t getgid(); //获取真实组ID
+	git_t getegid(); //获取有效组ID
+	int setuid(uid_t uid);	//设置真实用户ID
+	int seteuid(uid_t uid); //设置有效用户ID
+	int setgid(gid_t gid); //设置真实组ID
+	int setegid(gid_t gid); //设置有效组ID
+
+	linux下每个进程都隶属于一个进程组。 获取指定进程的PGID(进程组ID).
+	#include <unistd.h>
+	pid_t getpgid(pid_t pid);
+	每个进程组都有一个首领进程， 其PGID和PID相同。进程组将一直存在， 直到其中所有进程都退出， 或者加入到其他进程组。
+
+设置PGID
+#include<unistd.h>
+int setpdid(pid_t pid, pid_t pgid);
+
+一些有关联的进程组将形成一个会话。
+创建一个会话：
+	#include <unistd.h>
+	pid_t setsid(void);
+linux系统认为会话首领ID所在的进程组PGID等于会话ID
+	#include <unistd.h>
+	pid_t getsid(pid_t pid);
+
+获取Linux系统资源限制：
+	#include <sys/resource.h>
+	int getrlimit(int resource, struct rlimit * rlim);
+	int setrlimit(int resource, struct rlimit * rlim);
+rlim参数是rlimit结构体类型的指针
+	struct rlimit{
+		rlim_t rlim_cur;	//  指定资源的软限制
+		rlim_t rlim_max; //指定资源的硬限制
+	};
+
+获取进程当前工作目录和改变工作目录的函数：
+	#include <unistd.h>
+	char * getcwd(char * buf, size_t size);
+	int chdir(const char * path);
+	
+	buf指向的内存用于存储进程当前工作目录的绝对路径名。
+	chdir函数的path参数指定要切换到的目标目录。 
+改变进程根目录的函数是chroot:
+	#include <unistd.h>
+	int chroot(const char* path);
+
+
+	                   
+	nochdir参数指定是否改变工作目录。
+
+
+daemon函数是用于将程序运行为一个守护进程（daemon）的函数。守护进程是一种在后台运行的进程，通常没有控制终端，不与用户直接交互。
+
+
+
+
+
+
+
+
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+
+
+	
+
