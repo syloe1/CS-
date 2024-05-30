@@ -1,0 +1,112 @@
+IO复用虽然能同时监听多个文件描述符， 但他本身是阻塞的。
+
+select系统调用：
+#include <sys/select.h>
+int select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* exceptfds, struct timeval * timeout);
+监听的文件描述符数量 可读 可写 异常 
+
+fd_set结构体：
+	#include <typesizes.h> 
+#define __FD_SETSIZE 1024
+
+#include <sys/select.h>
+#define FD_SETSIZE___FD_SETSIZE
+typedef long int__fd_mask;
+#undef __NFDBITS
+#define __NFDBITS   (8 * (int)sizeof(__fd_mask))
+typedef struct {
+	#ifdef __USE_XOPEN
+		__fd_mask fds_bits[ __FD_SETSIZE / __NFDBITS];
+	#define __FDS_BITS(set)  ((set)->fds_bits)
+	#else
+		__fd_mask __fds_bits[ __FD_SETSIZE / __NFDBITS];
+	#define __FDS_BITS(set) ((set)->fds_bits);
+	#endif
+	
+}fd_set;
+
+
+使用下面一系列宏访问fd_set结构体中的位：
+	#include <sys/select.h>
+	FD_ZERO(fd_set *fdset); //清除fdset的所有位
+	FD_SET (int fd, fd_set* fdset); //设置fdset的位fd
+	FD_CLR (int fd, fd_set* fdset); //清除fdset的位fd
+	int FD_ISSET(int fd, fd_set *fdset); //测试fdset的位fd是否被设置
+
+ struct timeval {
+	long tv_sec; //秒数
+	long tv_usec; //微妙数
+ };
+
+
+
+	#include <poll.h>
+	int poll(struct pollfd* fds, nfds_t nfds, int timeout);
+	
+	struct pollfd {
+		int fd; //文件描述符
+		short events; //注册的事件
+		short revents; //实际发生的事件， 由内核填充
+	};
+
+	fd成员指的是文件描述符， events成员告诉poll监听fd上的哪些事件。
+
+其类型nfds_t定义的：
+	typedef unsigned long int nfds_t;
+
+首先， epoll使用一组函数来完成任务。 其次， epoll把用户关心的文件描述符上的事件放在内核里的一个事件表中，。 需要一个额外的文件描述符， 来唯一标识内核中的事件表。
+	#include <sys/epoll.h>
+	int epoll_create(int size); //size告诉它事件表需要多大
+	#include <sys/epoll.h>
+	int epoll_ctl(int epfd, int op, int fd, struct epoll_event * event);
+
+op参数：
+	EPOLL_CTL_ADD   往事件表注册fd上的事件
+	EPOLL_CTL_MOD	修改fd上的注册事件
+	EPOLL_CTL_DEL   删除fd上的注册事件
+
+struct epoll_event {
+	__uint32_t events; //epoll事件
+	epoll_data_t data; //用户数据
+};
+
+
+typedef union epoll_data {
+	void *ptr;
+	int fd;
+	uint32_t u32;
+	uint64_t u64;
+}epoll_data_t;
+
+#include <sys/epoll.h>
+int epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout);
+
+
+LT电平触发  ET边沿触发
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
