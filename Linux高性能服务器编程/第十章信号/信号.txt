@@ -1,0 +1,130 @@
+CTRL + C通常会给进程发送一个中断信号
+一个进程给其他进程发送一个中断信号：
+	#include <sys/types.h>
+	#include <signal.h>
+	int kill(pid_t pid, int sig);
+把信号sig发送给目标进程pid。
+	pid > 0 把信号发送给PID 
+	pid = 0 信号发给进程组内其他进程
+	pid = -1 信号发送给除init进程外的所有进程
+	
+
+信号处理函数：
+	#include <signal.h>
+	typedef void (*__sighandler_t) {int };
+
+
+两种其他处理方式：
+	#include <bits/signum.h>
+	#define SIG_DFL{(_sighandler_t) 0}
+	#define SIG_IGN {(_sighandler_t) 1}
+
+
+signal系统调用：
+	#include <signal.h>
+	_sighandler_t signal(int sig, _sighandler_t _handler);
+
+sigaction系统调用
+#include <signal.h>
+int sigaction(int sig, const struct sigaction * act, struct sigaction* oact);
+
+sigaction结构体
+struct sigaction {
+	#ifdef __USE_POSIX199309
+		union {
+			_sighandler_t  sa_handler;
+			void (*sa_sigaction) (int , siginfo_t *, void*);
+		      }
+		_sigaction_handler;
+	#define sa_handler __sigaction_handler.sa_handler
+	#define sa_sigaction_handler.sa_sigaction
+	#else
+		_sighandler_t sa_handler;
+	#endif
+	_sigset_t sa_mask;
+	int sa_flags;
+	void (*sa_restorer) (void);
+};
+
+sigset_t表示一组信号
+#include <bits/sigset.h>
+#define _SIGSET_NWORDS (1024 */ (8 * sizeof(unsigned long int))) 
+typedef struct {
+	unsigned long int __val[_SIGSET_NWORDS];
+}__sigset_t;
+
+
+#include <signal.h>
+int sigemptyset(sigset_t* _set) 清空信号集
+int sigfillset(sigset_t* _set) 在信号集中设置所有信号
+int sigaddset(sigset_t* _set, int _signo);  将信号_signo添加至信号集中
+int sigdelset(sigset_t* _set, int _signo); 将信号signo从信号集中删除
+int sigismember(const _sigset_t* _set, int _signo); 测试_signo是否在信号集中
+
+
+查看进程信号掩码：
+	#include <signal.h>
+	int sigprocmask(int _how, const _sigset_t* _set, sigset_t* _oset);
+
+别挂起的信号
+	#include <signal.h>
+	int sigpending(sigset_t * set);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
