@@ -1,0 +1,42 @@
+神经网络的特征就是可以从数据中学习， 数据自动决定权重参数的值。
+
+深度学习有时也称为端到端学习。 从输入到输出的意思。
+
+机器学习中， 数据分为
+	 训练数据    学习     （监督数据）
+	 测试数据    实验
+只对某个数据集过度拟合的状态称为过拟合。
+神经网络以某个指标为线索寻找最优权重参数， 神经网络的
+学习中所用的指标称为损失函数。
+
+均方误差
+
+E = 0.5 for 维数 (神经网络输出 - 监督数据）**2
+实现均方误差：
+	def mean_squared_error(y, t):
+		return 0.5 * np.sum((y-t)**2)
+
+交叉熵误差：
+	E = -  for 维数  监督数据log 神经网络输出
+实现交叉熵误差：
+	def cross_entropy_error(y, t):
+		delta = 1e-7
+		return -np.sum(t*np.log(y + delta)
+
+实现mini_batch版交叉熵误差
+	def cross_entropy_error(y, t):
+		if y.dim == 1:
+			t = t.reshape(1, t.size)
+			y = y.reshape(1, y.size)
+		batch_size = y.shape[0]
+		return -np.sum(t * np.log(y + 1e-7)) / batch_size
+
+
+再进行神经网络学习时， 不能将识别精度作为指标。 如果以识别精度为指标， 则参数的导数再绝大多数地方都会变为0
+
+实现数值差分：
+	def numerical_diff(f, x):
+		h = 10e-50
+		return (f(x + h) - f(x)) / h
+
+函数的极小值、 最小值以及被称为鞍点的地方， 梯度为0.

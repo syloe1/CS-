@@ -1,0 +1,24 @@
+用户自己定义类， 自己创建数据类型。
+Python中使用class关键字来定义类：
+class 类名：
+	def __init__(self, 参数, ...): #构造函数
+	def 方法名1 (self, 参数, ...): #方法1
+	def 方法名2 (self, 参数, ...): #方法2
+
+Python使用import语句来导入库。
+import numpy as np 将numpy作为 np导入
+
+先在命令行安装numpy
+	pip install numpy
+
+
+通过shape查看矩阵形状
+NumPy有广播功能， 所以不同形状的数组之间也可以顺利地进行运算。
+
+
+使用flatten函数转换为一维数组
+
+Matplotlib可以轻松绘制图形
+命令行安装
+	pip install matplotlib
+
