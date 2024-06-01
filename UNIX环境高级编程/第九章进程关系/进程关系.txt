@@ -20,3 +20,4 @@ int tcsetpgrp(int fd, pid_t pgrpld);
 #include <termios.h>
 pid_t tcgetsid(int fd);
 
+一个父进程已终止的进程称为孤儿进程。 由init进程收养。
