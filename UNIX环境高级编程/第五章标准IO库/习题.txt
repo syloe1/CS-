@@ -1,0 +1,15 @@
+5.1 用setvbuf实现setbuf。
+5.2 图5-5中的程序利用每次一行VO（fgets和fputs函数）复制文件。若将程序中的MAXLINE
+改为4，当复制的行超过该最大值时会出现什么情况？对此进行解释。
+5.3 printf返回的值表示什么？
+5.4 下面的代码在一些机器上运行正确，而在另外一些机器运行时出错，解释问题所在。
+#include<stdio.h>
+int main(void)
+char c；
+while ((c = getchar())!= EOF)
+putchar(c) ;
+5.5 对标准I/O流如何使用fsync函数（见3.13节）？
+5.6 在图1-7和图1-10程序中，打印的提示信息没有包含换行符，程序也没有调用flush函数，
+请解释输出提示信息的原因是什么？
+5.7 基于BSD的系统提供了funopen的函数调用使我们可以拦截读、写、定位以及关闭一个
+流的调用。使用这个函数为FreeBSD和MacOSX实现fmemopen。

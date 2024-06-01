@@ -1,0 +1,157 @@
+标准IO库， 围绕流进行的。
+流的定向决定了所读、写的字符是单字节还是多字节。 只有两个函数可以改变流的定向。
+#include  <stdio.h>
+#include  <wchar.h>
+int fwide(FILE* fp, int mode);
+	若流是宽定向， 返回正值
+	字节定向 返回负值
+	未定向   返回0
+fwide无错误返回
+
+标准IO有三种缓冲：
+	全缓冲 填满缓冲区后才进行IO操作
+	行缓冲 在输入 输出遇到换行符才执行IO操作
+	不带缓冲
+
+更改缓冲类型
+#include <stdio.h>
+void setbuf(FILE * restrict fp, char * restrict buf);
+int setvbuf(FILE* restrict fp, char * restrict buf, int mode, size_t size);
+
+_IOFBF 全缓冲
+_IOLBF 行缓冲
+—IONBF 不带缓冲
+
+强制冲洗一个流：
+	#include <stdio.h>
+	int fflush(FILE* fp);
+
+
+打开一个IO流
+#include <stdio.h>
+FILE* fopen(const char* restrict pathname, const char * restrict type);
+FILE* freopen(const char * restrict pathname, const char * restrict type, FILE* restrict fp);
+FILE* fdopen(int fd, const char * type);
+
+fopen函数打开路径名为pathname的一个指定文件
+freopen函数在指定的流上打开一个指定的文件， 如若流已经打开， 则先关闭流
+若流已经定向， 则使用freopen清除该定向
+此函数一般用于将一个指定文件打开为一个预定义的流， 标准输入 输出 错误
+
+fdopen函数取一个已有的文件描述符
+
+调用fclose关闭一个打开的流：
+	#include <stdio.h>
+	int fclose(FILE* fp);
+	在文件关闭之前， 冲洗缓冲中的输出数据。 缓冲区中的任何输入数据被丢弃。
+
+
+
+三种IO:
+	每次一个字符的IO
+	每次一行的IO
+	直接IO
+
+一次读一个字符：
+	#include <stdio.h>
+	int getc(FILE* fp);
+	int fgetc(FILE* fd);
+	int getchar(void);
+
+
+#include <stdio.h>
+int ferror(FILE* fp);
+int feof(FILE* fp);
+void clearerr(FILE* fp);
+每个流维护两个标志：
+	出错标志
+	文件结束标志
+
+调用clearerr清除标志， 从流中读取数据后， 调用ungetc将字符押送回流中
+#include <stdio.h>
+int ungetc(int c, FILE* fp);
+
+输出函数
+#include <stdio.h>
+int putc(int c, FILE* fp);
+int fputc(int c, FILE* fp);
+int putchar(int c);
+
+每次一行IO
+#include <stdio.h>
+char * fgets(char * restrict buf, int n, FILE* restrict fp);
+char * gets(char *buf);
+
+输出函数
+#include <stdio.h>
+int fputs(const char * restrict str, FILE* restrict fp);
+int puts(const char * str);
+
+提供两个函数以执行二进制IO操作。
+#include <stdio.h>
+size_t fread(void* restrict ptr, size_t size, size_t nobj, FILE* restrict fp);
+size_t fwrite(const void * restrict ptr, size_t size, size_t nobj, FILE* restrict fp);
+
+定位IO流
+
+#include <stdio.h>
+long ftell(FILE* fp);
+int fseek(FILE* fp, long offset, int whence);
+void rewind(FILE* fp);
+
+
+
+
+
+#include <stdio.h>
+off_t ftello(FILE* fp);
+int fseeko(FILE* fp, off_t offset, int whence);
+
+
+#include <stdio.h>
+int fgetpos(FILE* restrict fp, fpos_t * restrict pos);
+int fsetpos(FILE* fp, const fpos_t *pos);
+
+格式化IO
+#include <stdio.h>
+int printf(const char* restrict format, ...);
+int fprintf(FILE* restrict fp, const char * restrict format, ...);
+int dprintf(int fd, const char * restrict format, ...)
+int sprintf(char * restrict buf, const char * restrict format, ...);
+	
+int snprintf(char* restrict buf, size_t n, const char *restrict format,...);
+
+
+
+格式化输入
+#include <stdio.h>
+int scanf(const char* restrict format,  ...);
+int fscanf(FILE* restrict fp, const char * restrict format, ...)
+int sscanf(const char *restrict buf, const char *restrict format, ..);
+
+实现fileno函数以获得其描述符
+#include <stdio.h>
+int fileno(FILE* fp)
+
+
+创建临时文件
+#include <stdio.h>
+char * tmpnam(char *ptr); 返回指向唯一路径名的指针
+FILE* tmpfile(void)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
