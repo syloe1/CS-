@@ -1,0 +1,82 @@
+main原型：
+	int main(int argc, char * argv[])
+argc是命令行参数的数目， argv是指向参数的各个指针所构成的数组。
+当内核C程序时， 使用exec函数调用main前先调用一个特殊的启动例程。 可执行程序文件将此启动例程指定为程序的起始地址， 这是由连接编辑器设置的， 而连接编译器则由C编译器调用。 启动例程从内核取得命令行参数和环境变量值。
+
+
+5种正常终止：
+	从main函数返回
+	调用exit
+	调用_exit或Exit
+	从最后一个线程从其启动例程返回
+	从最后一个线程调用pthread_exit
+三种异常终止：
+	调用abort
+	接到一个信号
+	最后一个线程对取消请求做出响应
+
+exit函数总是执行一个标准IO的清理关闭操作， 对打开流调用fclose函数
+#include <stdlib.h>
+void exit(int status);
+void _Exit(int status);
+#include <unistd.h>
+void _exit(int status)
+
+
+
+
+
+调用atexit函数来登记这些函数
+#include <stdlib.h>
+int atexit(void (*func)(void));
+参数是一个函数地址
+
+
+调用exec的进程可将命令行参数传递给新程序。
+C程序的存储空间布局
+	正文段
+	初始化数据
+	未初始化数据
+	栈
+	堆
+
+
+存储空间分配
+#include <stdio.h>
+void* malloc(size_t size);
+void* calloc(size_t nobj, size_t size);
+void* realooc(void* ptr, size_t newsize);
+
+void free(void *ptr);
+
+
+获取环境变量值
+#include <stdlib.h>
+char * getenv(const char* name);
+
+
+函数原型：
+	#include <stdlib.h>
+	int putenv(char *str);
+	int setenv(const char * name, const char* value, int rewrite);
+	int unsetenv(const char* name);
+
+
+#include <setjmp.h>
+int setjmp(jmp_buf env);
+void longjmp(jmp_buf env, int val);
+
+
+
+
+函数查询和更改
+#include <sys/resource.h>
+int getrlimit(int resource, struct rlimit* rlptr);
+int setrlimit(int resource, const struct rlimit* rlptr);
+
+
+struct rlimit {
+	rlim_t rlim_cur;
+	rlim_t rlim_max;
+};
+
