@@ -1,0 +1,38 @@
+口令文件定义在<pwd.h>的passwd中
+
+获取口令文件项：
+	#include <pwd.h>
+	struct passwd *getpwuid(uid_t uid);
+	struct passwd *getpwnam(cosnt char *name);
+
+
+查看登录名或者用户ID
+#include <pwd.h>
+struct passwd* getpwent(void)
+void setpwent(void)
+void endpwent(void)
+
+
+
+获取阴影口令：
+#include <shadow.h>
+struct spwd* getspnam(const char * name)
+struct spwd* getspent(void)
+void setpwent(void)
+void endpwent(void)
+
+
+查看组名或者数值组ID
+#include <grp.h>
+struct group* getgrgid(gid_t gid);
+struct group* getgrnam(const char *name);
+
+#include <grp.h>
+struct group* getgrent(void);
+void setgwent(void)
+void endgwent(void)
+
+
+返回当前时间和日期
+#include <time.h>
+time_t time(time_t *calptr);

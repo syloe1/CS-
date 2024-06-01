@@ -1,0 +1,31 @@
+6.1 如果系统使用阴影文件，那么如何取得加密口令？
+	系统使用阴影密码文件（通常是/etc/shadow），那么这些加密密码将被存储在那里，而不是在传统的/etc/passwd文件中。
+
+要访问阴影密码文件中的加密密码，必须具备超级用户（root）权限，因为/etc/shadow文件的权限设置非常严格，只有root用户和某些特定的系统进程才能读取。
+	#include <stdio.h>
+#include <stdlib.h>
+#include <shadow.h>
+#include <string.h>
+#include <errno.h>
+
+int main(void) {
+    struct spwd *spwd_entry;
+
+    // Open the shadow password file
+    if ((spwd_entry = getspnam("username")) == NULL) {
+        perror("getspnam error");
+        exit(EXIT_FAILURE);
+    }
+
+    // Print the encrypted password
+    printf("Encrypted password for user %s: %s\n", spwd_entry->sp_namp, spwd_entry->sp_pwdp);
+
+    return 0;
+}
+
+6.2 假设你有超级用户权限，并且系统使用了阴影口令，重新考虑上一道习题。
+6.3 编写一程序，它调用uname并输出utsname结构中的所有字段，将该输出与uname(1)命令的输出结果进行比较。
+6.4 计算可由time_t数据类型表示的最近时间。如果超出了这一时间将会如何？
+	
+
+6.5 编写一程序，获取当前时间，并使用strftime将输出结果转换为类似于date(1)命令的默认输出。将环境变量T设置为不同值，观察输出结果。
