@@ -1,0 +1,63 @@
+线程属性：
+	1. 每个对象与它自己类型的属性对象进行关联。 (互斥量 互斥量)
+	2. 有一个初始化函数， 把属性设置为默认值
+	3. 还有一个销毁属性对象的函数， 如果初始化函数分配了与属性对象关联的资源， 销毁资源负责释放这些资源
+	4. 每个属性都有一个从属性对象中获取属性值的函数
+	5. 每个属性都有一个设置属性值的函数。
+
+#include <pthread.h>
+int pthread_attr_init(pthread_attr_t* attr);
+int pthread_attr_destroy(pthread_attr_t* attr);
+
+
+不需要了解线程的终止状态 getdetachstate
+一开始就处于分离状态     setdetachstate
+#include <pthread.h>
+int pthread_attr_getdetachstate(const pthread_attr_t* restrict attr, int * detachstate);
+int pthread_attr_setdetachstate(pthread_attr_t* attr, int *detachstate);
+
+使用pthread_attr_getstack和pthread_attr_setstack
+对线程栈属性进行管理
+
+#include <pthread.h>
+int pthread_attr_getstack(const pthread* restrict attr, void ** restrict stackattr,
+	size_t *restrict stacksize);
+int pthread_attr_setstack(pthread_attr_t* attr, void * stackaddr, size_t stacksize);
+
+
+自旋锁： 进程共享属性
+
+互斥量属性：
+	#include <pthread.g>
+	int pthread_mutexattr_init(pthread_mutexattr_t * attr);
+	int pthread_mutexattr_destroy(pthread_mutexattr_t * attr);
+
+获取和修改进程共享属性
+#include <pthread.h>
+int pthread_mutexattr_getshared(const pthread_mutexattr_t * restrict attr, int *restrict pshared);
+int pthread_mutexattr_setpshared(pthread_mutexattr_t * attr, int pshared);
+
+读写锁属性：
+#include <pthread.h>
+int pthread_rwlockattr_init(pthread_rwlockattr_t *attr);
+int pthread_rwlockattr_destroy(pthread_rwlockattr_t* attr);
+
+
+int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t* restrict attr, int * restrict pshared);
+int pthread_rwlockattr_setpshared(pthread_rwlockattr_t * attr, int pshared)
+
+线程特定数据：	线程私有数据， 是存储和查询，某个特定吸纳从相关数据的一种机制。
+#include <pthread.h>
+int pthread_key_create(pthread_key_t *keyp, void (*destructor)(void*));
+取消关联关系
+#include <pthread.h>
+int pthread_key_delete(pthread_key_t key);
+
+阻止喜欢发射
+#include <signal.h>
+int pthread_sigmask(int how, sigset_t * restrict set, sigset_t * restrict oset);
+等待
+int sigwait(const sigset_t* restrict set, int *restrict signop);
+结束
+int pthread_kill(pthread_t thread, int signo);
+
