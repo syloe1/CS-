@@ -1,0 +1,33 @@
+非阻塞IO使我们可以发出open read writeIO操作， 并使这些操作不会永远阻塞。
+
+给定一个描述符， 两种方式将其指定为非阻塞IO:
+	1. 如果调用open获得描述符， 则可指定O_NONBLOCK标志
+	2. 对于已经打开地一个描述符， 则可调用fcntl, 由该函数打开O_NONBLOCK文件标志
+
+记录锁的功能是： 当第一个进程正在读或修改文件的某个部分， 使用记录锁可以阻止其他进程修改统一文件区。
+
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ...);
+
+
+循环中使用阻塞IO：
+	 while ((n = read(STDIN_FILENO, buf, BUFSIZ)) > 0) {
+        if (write(STDOUT_FILENO, buf, n) != n) {
+            err_sys("write error");
+        }
+    }
+    
+
+#include <poll.h>
+int poll(struct pollfd fdarray[], nfds_t nfds, int timeout);
+
+
+#include <aio.h>
+int aio_read(struct aiocb * aiocb);
+int aio_write(struct aiocb* aiocb);
+设计一个AIO控制块并调用aio_fsync函数
+
+
+获知一个异步读
+#include <aio.h>
+int aio_error(const struct  aiocb * aiocb);
