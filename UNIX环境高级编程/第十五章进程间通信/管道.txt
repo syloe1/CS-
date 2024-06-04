@@ -1,0 +1,6 @@
+#include <unistd.h>
+int pipe(int fd[2]);
+
+共享存储标识符
+#include <sys/shm.h>
+int shmget(key_t key, size_t size, int flag);
