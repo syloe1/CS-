@@ -22,7 +22,13 @@ clean:
 
 应用程序存在于虚拟内存中， 有一个非常大的堆栈区， 堆栈， 当然， 是用来保存函数调用历史以及所有的由当前活跃的函数创建的自动变量。
 
+一个模块在内核空间运行， 而应用程序在用户空间运行。
+
 模块建立之后， 下一步是加载到内核。
+
+内核代码可以引用当前线程， 通过存取全局项current, 它在<asm/current.h>中定义。
+
+内核程序存在于虚拟内存中， 有一个非常大的堆栈区。 堆栈， 当然， 是用来保存函数调用历史以及所有的由当前活跃的函数创建的自动变量。
 
 实际的初始化函数
 static int __init initialization_function(void) {
@@ -35,3 +41,4 @@ static void __exit cleanup_function(void) {
 	//cleanup code here
 }
 module_exit(cleanup_function);
+
