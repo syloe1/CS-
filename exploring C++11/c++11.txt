@@ -1,0 +1,167 @@
+右值引用或移动语义
+int x = 42;  int x(42); //后面是C++11写法
+string str1 = "sy"; string str2("sy");
+
+n个元素数组
+begin是下标0  end是下标n的元素
+locale 
+
+copy 
+transform
+
+lambda表达式
+
+auto times = &[multiplier](int i) {
+	return i * multiplier;
+};
+auto times = [multiplier](int i) {
+	return i * multiplier;
+};
+	
+值捕获和 引用捕获
+
+auto lambda =
+[by_value, &by_reference, another_by_value, &another_by_reference]() {
+	by_reference = by_value;
+	another_by_reference = another_by_value;
+};
+
+使用 std::locale{} 创建了一个空的locale实例，这通常代表程序的全局locale。
+
+std::isalpha('X', std::locale{}) 在C++11标准中，std::isalpha 函数用于检查给定的字符是否是字母。然而，std::isalpha 函数默认使用C++程序的当前locale来确定字符是否是字母。这意味着，如果你需要在特定的locale上下文中检查字符，你应该提供一个locale作为参数。
+
+=delete是一个关键字，用来显式地删除一个类成员函数的默认实现，使其不能被定义。
+
+struct dont_copy
+{
+    dont_copy(dont_copy const&) = delete;  
+};
+dont_copy是一个结构体，它有一个构造函数，这个构造函数是拷贝构造函数，
+它接受一个dont_copy类型的常量引用作为参数。=delete告诉编译器，不要为
+这个构造函数生成默认实现，也就是说，禁止通过拷贝构造函数来创建dont_copy对象的副本。
+
+struct point
+{
+	 point() = default; // 指示编译器生成默认的默认构造函数
+	 point(point const&) = default; // 指示编译器生成默认的拷贝构造函数
+	 int x, y;
+}； = default什么意思
+= default是一个关键字，用来指示编译器为类生成默认的特殊成员函数。
+
+C++中，如果在成员函数的声明末尾加上const关键字，这表明该函数是常量成员函数。
+
+void print(std::ostream& out, int threshold)
+ const
+ {
+	 out << std::setw(6) << height_
+	 << std::setw(7) << weight_
+	 << std::setw(3) << sex_
+	 << std::setw(6) << bmi_;
+	 if (bmi_ >= threshold)
+	 out << '*';
+	 else
+	 out << ' ';
+	 out << ' ' << name_ << '\n';
+ } 
+ 
+ 在C++中，.hpp和.h文件扩展名通常用来区分头文件（header files）的用途，尽管这种区分不是强制性的，也不一定在所有项目中都遵循。下面是一些常见的约定：
+
+.h: 传统的C头文件扩展名，也用于一些C++项目。它通常用于包含C库函数声明的系统头文件，比如<cstdio>、<cstdlib>等。在一些老旧的或混合C/C++的项目中，.h也可能用于用户定义的头文件。
+
+.hpp: 这个扩展名是C++特有的，用于区分C++的头文件。使用.hpp可以帮助明确表示该文件是C++代码的一部分，并且可能包含C++特有的语法和特性，如类声明、模板等。这种区分可以提醒开发者文件中可能使用了C++特有的包含指令（#include）语法。
+
+
+
+很好的一个代码
+#include <iostream>
+class base {
+	public:
+		base() {
+			std::cout << "base\n";
+		}
+};
+class middle : public base {
+	public:
+		middle() {
+			std::cout << "middle\n";
+		}
+};
+class derived : public middle {
+	public:
+		derived() {
+			std::cout << "derived\n";
+		}
+};
+int main() {
+	derived d;
+}
+
+
+#include <iostream>
+class base {
+	public:
+		base() {
+			std::cout << "base\n";
+		}
+		~base() {
+			std::cout << "~base\n";
+		}
+};
+class middle : public base {
+	public:
+		middle() {
+			std::cout << "middle\n";
+		}
+		~middle() {
+			std::cout << "~middle\n";
+		}
+};
+class derived : public middle {
+	public:
+		derived() {
+			std::cout << "derived\n";
+		}
+		~derived() {
+			std::cout << "~derived\n";
+		}
+};
+int main() {
+	derived d;
+}
+
+
+按值传递:
+
+参数作为函数的局部变量，函数接收的是实参的一个副本。
+函数内部对参数的修改不会影响到实参。
+适用于小且简单的数据类型，如整数、小的结构体等。
+优点是简单，易于理解，缺点是需要复制数据，可能会影响性能
+
+
+按引用传递:
+
+参数实际上是实参的别名，函数可以直接访问和修改实参。
+函数内部对参数的修改会影响到实参。
+适用于大的数据结构，如数组、类对象等，或者需要在函数内部修改实参的情况。
+优点是可以避免复制数据，提高效率，缺点是增加了函数对外部数据的依赖性。
+
+在C++中，使用 std::move 将一个对象转换为右值引用，这通常用于触发移动构造函数或移动赋值运算符、
+，从而避免复制资源的开销，并将资源从原始对象“移动”到新对象。当对象被移动后，
+原始对象会处于一个有效但未定义的状态，这意味着原始对象可能不再包含有效的资源。
+
+
+模板特化
+
+locales
+std::cin.imbue(std::locale::classic()); // standard input uses the classic locale
+std::cout.imbue(std::locale{""}); // imbue with the user's default locale
+
+时间类型
+chrono std::chrono::system_clock::time_point
+
+move
+
+智能指针496页 第63章
+取消跳过空白字符：
+
+std::cin.unsetf(std::ios_base::skipws);
